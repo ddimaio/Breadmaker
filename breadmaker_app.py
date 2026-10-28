@@ -17,6 +17,7 @@ Data (custom recipes, settings, phase calibration, running timer) is stored in
 """
 
 import copy
+import html
 import io
 import json
 import math
@@ -1011,16 +1012,44 @@ st.set_page_config(page_title="Bread Maker Companion", page_icon="🍞", layout=
 SET = get_settings()
 CUP = SET["cup_ml"]
 
-PAGES = ["🍞 Bake", "⏱️ Timer", "✏️ Custom recipes", "⚙️ Settings"]
-if "page" not in st.session_state:
+st.markdown("""<style>
+/* Touch-friendly controls */
+.stButton button, .stDownloadButton button, .stFormSubmitButton button {min-height: 3rem; font-size: 1.05rem;}
+[data-testid="stCheckbox"] label {padding: .45rem 0; line-height: 1.45; align-items: flex-start;}
+[data-testid="stRadio"] label {padding: .2rem .35rem .2rem 0;}
+@media (max-width: 640px) {
+  .block-container, [data-testid="stMainBlockContainer"] {padding: 2.6rem .75rem 4rem .75rem;}
+  h2 {font-size: 1.45rem;} h3 {font-size: 1.2rem;}
+}
+/* Ingredient cards */
+.ing-grid {display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: .55rem; margin: .4rem 0 .6rem;}
+.ing {border: 1px solid rgba(128,128,128,.35); border-radius: .6rem; padding: .55rem .75rem; background: rgba(128,128,128,.06);}
+.ing-name {font-weight: 600; margin-bottom: .15rem;}
+.ing-m {font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums;}
+.ing-v {opacity: .85;}
+.ing-when {font-size: .82rem; opacity: .7; margin-top: .2rem;}
+.ing-note {font-size: .82rem; font-style: italic; opacity: .75; margin-top: .15rem;}
+/* Timer card */
+.tcard {border: 1px solid rgba(128,128,128,.35); border-radius: .8rem; padding: .9rem 1rem; text-align: center;
+        background: rgba(128,128,128,.06); margin-bottom: .6rem;}
+.tcard .t-phase {font-size: 1.5rem; font-weight: 700;}
+.tcard .t-big {font-size: 3.4rem; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums;}
+.tcard .t-sub {opacity: .8; font-variant-numeric: tabular-nums;}
+.mini {font-size: .92rem; opacity: .85; margin: -.3rem 0 .4rem;}
+</style>""", unsafe_allow_html=True)
+
+PAGES = ["🍞 Bake", "⏱️ Timer", "✏️ Recipes", "⚙️ Settings"]
+if st.session_state.get("page") not in PAGES:
     st.session_state.page = PAGES[0]
 if st.session_state.pop("goto", None):
     st.session_state.page = PAGES[1]
 
+# Navigation at the top of the page (the sidebar is hidden behind a menu on phones)
+st.radio("Page", PAGES, key="page", horizontal=True, label_visibility="collapsed")
+
 with st.sidebar:
     st.title("Bread Maker")
     st.caption("Gastroback Design Bread Maker Advanced · 62823")
-    st.radio("Page", PAGES, key="page", label_visibility="collapsed")
 
     @st.fragment(run_every=2)
     def sidebar_status():
@@ -1038,22 +1067,29 @@ with st.sidebar:
     sidebar_status()
 
 
+def ack_event(ev_id):
+    update_run(lambda r_: r_["acked"].append(ev_id) if ev_id not in r_["acked"] else None)
+
+
 @st.fragment(run_every=1)
 def alert_bar():
     run = load_run()
     if not run:
         return
     e = elapsed(run)
+    if st.session_state.get("page") != PAGES[1]:
+        _, name, cum, dur = phase_at(run, e)
+        st.markdown(f'<div class="mini">⏱️ <b>{html.escape(run["recipe"])}</b> · {html.escape(name)}'
+                    + (f" · {hms(cum + dur - e, False)} left" if dur else "")
+                    + (" · ⏸️ paused" if run["pause_start"] else "") + "</div>", unsafe_allow_html=True)
     due = [ev for ev in run["events"] if ev["at"] <= e and ev["id"] not in run["acked"]]
     fired = st.session_state.setdefault("fired", {})
     ring = False
     for ev in due:
         icon = {"blade": "🔪", "add": "➕", "done": "✅"}.get(ev["kind"], "🔔")
-        c1, c2 = st.columns([6, 1])
-        c1.error(f"{icon} **{ev['title']}** — {ev['msg']}")
-        if c2.button("Done", key="ack_" + ev["id"], width="stretch"):
-            update_run(lambda r_: r_["acked"].append(ev["id"]))
-            st.rerun(scope="fragment")
+        st.error(f"{icon} **{ev['title']}** — {ev['msg']}")
+        st.button(f"✔️ Done: {ev['title']}", key="ack_" + ev["id"], width="stretch",
+                  on_click=ack_event, args=(ev["id"],))
         if ev["id"] not in fired:
             fired[ev["id"]] = time.time()
             st.toast(f"{icon} {ev['title']}")
@@ -1096,16 +1132,24 @@ def page_bake():
     if r.get("notes"):
         st.info(r["notes"])
 
-    # Ingredients table
-    rows, total = [], 0.0
+    # Ingredient cards (wrap to one column on phones)
+    st.markdown("### Ingredients")
+    cards, total = [], 0.0
     for ing in r["ingredients"]:
         m, v = amount_texts(ing, idx, CUP)
-        rows.append({"Ingredient": ing["name"], "g / ml": m, "Cups / spoons": v,
-                     "When": WHERE.get(ing.get("where", "pan"), "")
-                     + (f" ({ing['at_min']:g} min)" if ing.get("where") == "timed" and ing.get("at_min") is not None else "")})
+        when = WHERE.get(ing.get("where", "pan"), "")
+        if ing.get("where") == "timed" and ing.get("at_min") is not None:
+            when += f" ({ing['at_min']:g} min)"
+        cards.append(
+            f'<div class="ing"><div class="ing-name">{html.escape(ing["name"])}</div>'
+            f'<div><span class="ing-m">{html.escape(m)}</span>'
+            + (f' <span class="ing-v">≈ {html.escape(v)}</span>' if v and v != "—" else "")
+            + f'</div><div class="ing-when">{html.escape(when)}</div>'
+            + (f'<div class="ing-note">{html.escape(ing["note"])}</div>' if ing.get("note") else "")
+            + "</div>")
         if ing.get("where", "pan") not in ("prep", "after") or p in (9, 15):
             total += est_grams(ing, idx)
-    st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+    st.markdown('<div class="ing-grid">' + "".join(cards) + "</div>", unsafe_allow_html=True)
     cup_name = {240: "US cup 240 ml", 250: "metric cup 250 ml"}.get(CUP, f"cup {CUP} ml")
     st.caption(f"Volumes are approximate (spoon-and-level; {cup_name}; tsp 5 ml, tbsp 15 ml). "
                "Weighing is more accurate — the manual recommends scales for solids.")
@@ -1177,14 +1221,15 @@ def timer_setup(r, size, idx, crust, key_prefix="t"):
                                value=blade_enabled(r), key=f"{key_prefix}bl|{r['name']}")
 
     if phases:
-        st.dataframe(pd.DataFrame([{"Phase": ph["name"], "Duration": hms(ph["sec"])} for ph in phases]),
-                     hide_index=True)
+        with st.expander(f"Phase plan · total {hms(sum(ph['sec'] for ph in phases))}"):
+            st.dataframe(pd.DataFrame([{"Phase": ph["name"], "Duration": hms(ph["sec"])} for ph in phases]),
+                         hide_index=True, width="stretch")
 
     existing = load_run()
     confirm = True
     if existing:
         confirm = st.checkbox(f"Replace the running timer ({existing['recipe']})", key=f"{key_prefix}rep|{r['name']}")
-    if st.button("▶️ Start timer (press START on the machine now)", type="primary",
+    if st.button("▶️ Start timer — press START on the machine now", type="primary", width="stretch",
                  disabled=not phases or not confirm, key=f"{key_prefix}go|{r['name']}"):
         if p not in USER_TIME and p != 17:
             calib.setdefault("lcd", {})[lcd_key] = tot
@@ -1215,13 +1260,16 @@ def page_timer():
         e = elapsed(run)
         tot = program_total(run)
         k, name, cum, dur = phase_at(run, e)
-        st.markdown(f"## {run['recipe']}")
+        st.markdown(f"#### {run['recipe']}")
         st.caption(f"Program {run['program']} {PROGRAMS.get(run['program'], '')} · {run['size']}"
                    + (f" · {run['crust']} crust" if run["program"] in CRUST_PROGS else ""))
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Current phase", name + (" (paused)" if run["pause_start"] else ""))
-        c2.metric("Phase time left", hms(cum + dur - e) if dur else "—")
-        c3.metric("Machine LCD (remaining)", hms(max(0, tot - e)))
+        big = hms(cum + dur - e, show_h=(cum + dur - e) >= 3600) if dur else "—"
+        st.markdown(
+            f'<div class="tcard"><div class="t-phase">{html.escape(name)}'
+            + (" ⏸️" if run["pause_start"] else "") + "</div>"
+            f'<div class="t-big">{big}</div>'
+            f'<div class="t-sub">left in phase · LCD {hms(max(0, tot - e))}</div></div>',
+            unsafe_allow_html=True)
         st.progress(min(1.0, e / max(1, tot)), text=f"Elapsed {hms(e)} of {hms(tot)}")
         if run["pause_start"]:
             pz = time.time() - run["pause_start"]
@@ -1233,20 +1281,9 @@ def page_timer():
         if nxt:
             st.info(f"Next alert in **{hms(nxt[0]['at'] - e)}** — {nxt[0]['title']}")
 
-        rows, c = [], 0
-        for j, ph in enumerate(run["phases"] + ([{"name": "Keep warm", "sec": run["keep_warm"]}] if run["keep_warm"] else [])):
-            status = "✅" if e >= c + ph["sec"] else ("▶️" if e >= c else "")
-            rows.append({"": status, "Phase": ph["name"], "Starts at": hms(c), "Duration": hms(ph["sec"])})
-            c += ph["sec"]
-        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-        st.dataframe(pd.DataFrame([{"At": hms(ev["at"]), "Alert": ev["title"],
-                                    "Status": "done" if ev["id"] in run["acked"] else ("due" if ev["at"] <= e else "")}
-                                   for ev in run["events"]]), hide_index=True, width="stretch")
-
     live()
 
-    st.markdown("#### Controls")
-    c1, c2, c3 = st.columns(3)
+    c1, c2 = st.columns(2)
     if run["pause_start"]:
         if c1.button("▶️ Resume (plugged back in / resumed)", type="primary", width="stretch"):
             def f(r_):
@@ -1255,19 +1292,37 @@ def page_timer():
             update_run(f)
             st.rerun()
     else:
-        if c1.button("⏸️ Pause (unplugged / paused)", width="stretch"):
+        if c1.button("⏸️ Pause (unplugged / paused)", type="primary", width="stretch"):
             update_run(lambda r_: r_.__setitem__("pause_start", time.time()))
             st.rerun()
-    if c3.button("⏹️ Stop timer", width="stretch"):
+    if c2.button("⏹️ Stop timer", width="stretch"):
         clear_run()
         st.session_state.pop("fired", None)
         st.rerun()
+
+    with st.expander("Phase schedule & alerts"):
+        @st.fragment(run_every=5)
+        def schedule():
+            run = load_run()
+            if not run:
+                return
+            e = elapsed(run)
+            rows, c = [], 0
+            for ph in run["phases"] + ([{"name": "Keep warm", "sec": run["keep_warm"]}] if run["keep_warm"] else []):
+                status = "✅" if e >= c + ph["sec"] else ("▶️" if e >= c else "")
+                rows.append({"": status, "Phase": ph["name"], "Starts": hms(c), "Length": hms(ph["sec"])})
+                c += ph["sec"]
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+            st.dataframe(pd.DataFrame([{"At": hms(ev["at"]), "Alert": ev["title"],
+                                        "": "✅" if ev["id"] in run["acked"] else ("🔔" if ev["at"] <= e else "")}
+                                       for ev in run["events"]]), hide_index=True, width="stretch")
+        schedule()
 
     with st.expander("Sync with the machine"):
         st.caption("If the app drifts from the machine, re-anchor it to what the machine shows.")
         a, b = st.columns(2)
         rem = a.text_input("LCD remaining time (h:mm)", placeholder="e.g. 1:42")
-        if a.button("Sync to LCD"):
+        if a.button("Sync to LCD", width="stretch"):
             m = parse_hmm(rem)
             if m is None:
                 a.error("Use h:mm")
@@ -1276,7 +1331,7 @@ def page_timer():
                 st.rerun()
         names = [ph["name"] for ph in run["phases"]]
         ph = b.selectbox("Machine has just entered phase", names)
-        if b.button("Sync to phase start"):
+        if b.button("Sync to phase start", width="stretch"):
             def f(r_):
                 c = 0
                 for x in r_["phases"]:
@@ -1330,6 +1385,7 @@ def df_to_ings(df, sizes):
 
 def page_custom():
     st.header("Custom recipes")
+    st.caption("The ingredient grid is easiest on a larger screen; recipes you save here show up on phones too.")
     custom = load_json(F_CUSTOM, [])
     names = [r["name"] for r in custom]
     choices = ["➕ New recipe"] + [f"Edit: {n}" for n in names] + [f"Copy built-in: {r['name']}" for r in BUILTIN]
@@ -1476,7 +1532,10 @@ def page_settings():
             st.error(f"Failed: {ex}")
 
     st.markdown("#### Browser notifications")
-    st.caption("Works when the page is opened via localhost or https. Click once to allow.")
+    st.caption("Browsers only allow notifications on localhost or https. To use them from your phone, serve the app "
+               "over https with Tailscale (see README: `tailscale serve --bg 8501`) and open the https://…ts.net "
+               "address. On iPhone, notifications additionally need the page added to the Home Screen "
+               "(Share → Add to Home Screen) and opened from there. Tap once to allow:")
     html_js("""
       <button style="padding:6px 12px;border-radius:6px;border:1px solid #888;cursor:pointer"
         onclick="var N=window.Notification||parent.Notification;
