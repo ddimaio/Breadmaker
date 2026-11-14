@@ -504,22 +504,23 @@ BUILTIN = [
         I("Yeast", "g", [5, 5, 4], "yeast"),
         I("Desiccated coconut", "g", [60, 45, 30], "coconut", "box_or_beep"),
     ]),
-    R("Three chocolate bread", "Bread", 4, ["1000 g", "750 g"], [
-        I("Water", "ml", [240, 150], "water"),
-        I("Egg", "pcs", [1, 1]),
-        I("Unbleached white bread flour", "g", [500, 375], "bread_flour"),
-        I("Caster sugar", "g", [25, 15], "caster_sugar"),
-        I("Salt", "tsp", [1, 0.5], "salt"),
-        I("Butter", "g", [25, 20], "butter", note="put sugar, salt and butter in separate corners of the pan"),
-        I("Easy bake (rapid-rise) dried yeast", "tsp", [1.5, 1], "yeast"),
-        I("Plain chocolate with raisins and almonds, coarsely chopped", "g", [50, 40], "chocolate", "beep"),
-        I("Plain chocolate with ginger, coarsely chopped", "g", [50, 40], "chocolate", "beep"),
-        I("Belgian milk chocolate, coarsely chopped", "g", [75, 50], "chocolate", "beep"),
-    ], notes="From a bread machine cookbook (Sweet breads and yeast cakes, p. 208). The book's Medium amounts are "
-             "used for 1000 g and its Small amounts for 750 g, because its 'Large' version (600 g flour, ≈1.25 kg "
-             "in total) is over this machine's 1000 g limit. The book suggests light crust for the small loaf and "
-             "medium for the larger one. Add the chocolate gradually at the beep, letting each lot mix in before "
-             "adding more. Contains egg — no delay timer."),
+    R("Three chocolate bread", "Bread", 4, SIZES3, [
+        I("Water", "ml", [230, 160, 90], "water"),
+        I("Egg", "pcs", [1, 1, 1]),
+        I("Unbleached white bread flour", "g", [480, 360, 240], "bread_flour"),
+        I("Caster sugar", "g", [24, 18, 12], "caster_sugar"),
+        I("Salt", "tsp", [1, 0.75, 0.5], "salt"),
+        I("Butter", "g", [24, 18, 12], "butter", note="put sugar, salt and butter in separate corners of the pan"),
+        I("Easy bake (rapid-rise) dried yeast", "tsp", [1.5, 1, 0.75], "yeast"),
+        I("Plain chocolate with raisins and almonds, coarsely chopped", "g", [50, 35, 25], "chocolate", "beep"),
+        I("Plain chocolate with ginger, coarsely chopped", "g", [50, 35, 25], "chocolate", "beep"),
+        I("Belgian milk chocolate, coarsely chopped", "g", [70, 55, 35], "chocolate", "beep"),
+    ], notes="Adapted from a bread machine cookbook (Sweet breads and yeast cakes, p. 208), rescaled from the "
+             "book's Medium loaf so each size totals ≈ 990 / 740 / 495 g, within the machine's 1000 g limit "
+             "(the book's Large is ≈ 1.25 kg). Liquid (water + egg) is kept at the book's 58 % of the flour, so the "
+             "water is reduced on the smaller loaves to allow for the whole egg. Crust: light for 500 g, medium "
+             "otherwise. Add the chocolate gradually at the beep, letting each lot mix in before adding more. "
+             "Contains egg — no delay timer."),
     # ---------------- Cakes ----------------
     R("Gingerbread", "Cake", 9, SINGLE, [
         I("Egg", "pcs", 1),
