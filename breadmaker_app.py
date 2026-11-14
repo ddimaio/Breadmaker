@@ -504,6 +504,22 @@ BUILTIN = [
         I("Yeast", "g", [5, 5, 4], "yeast"),
         I("Desiccated coconut", "g", [60, 45, 30], "coconut", "box_or_beep"),
     ]),
+    R("Three chocolate bread", "Bread", 4, ["1000 g", "750 g"], [
+        I("Water", "ml", [240, 150], "water"),
+        I("Egg", "pcs", [1, 1]),
+        I("Unbleached white bread flour", "g", [500, 375], "bread_flour"),
+        I("Caster sugar", "g", [25, 15], "caster_sugar"),
+        I("Salt", "tsp", [1, 0.5], "salt"),
+        I("Butter", "g", [25, 20], "butter", note="put sugar, salt and butter in separate corners of the pan"),
+        I("Easy bake (rapid-rise) dried yeast", "tsp", [1.5, 1], "yeast"),
+        I("Plain chocolate with raisins and almonds, coarsely chopped", "g", [50, 40], "chocolate", "beep"),
+        I("Plain chocolate with ginger, coarsely chopped", "g", [50, 40], "chocolate", "beep"),
+        I("Belgian milk chocolate, coarsely chopped", "g", [75, 50], "chocolate", "beep"),
+    ], notes="From a bread machine cookbook (Sweet breads and yeast cakes, p. 208). The book's Medium amounts are "
+             "used for 1000 g and its Small amounts for 750 g, because its 'Large' version (600 g flour, ≈1.25 kg "
+             "in total) is over this machine's 1000 g limit. The book suggests light crust for the small loaf and "
+             "medium for the larger one. Add the chocolate gradually at the beep, letting each lot mix in before "
+             "adding more. Contains egg — no delay timer."),
     # ---------------- Cakes ----------------
     R("Gingerbread", "Cake", 9, SINGLE, [
         I("Egg", "pcs", 1),
@@ -1418,12 +1434,13 @@ def page_custom():
     sizes = SIZES3 if multi else SINGLE
 
     df = recipe_to_df(base)
-    if sizes != base["sizes"]:  # size mode toggled: map first column across
+    if sizes != base["sizes"]:  # size set changed: keep matching columns, fill the rest from the first
         first = df[base["sizes"][0]] if base["sizes"][0] in df else None
+        kept = {s: df[s] for s in base["sizes"] if s in df}
         for s in base["sizes"]:
             df = df.drop(columns=s)
         for j, s in enumerate(sizes):
-            df.insert(2 + j, s, first)
+            df.insert(2 + j, s, kept.get(s, first))
     st.caption("Ingredients in loading order. 'Converter' picks the density used for cups/spoons. "
                "'Where' = how it goes in; 'At min' is used for 'At a set minute'.")
     col_cfg = {
