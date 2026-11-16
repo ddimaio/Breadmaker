@@ -567,6 +567,36 @@ BUILTIN = [
         I("Bread flour", "g", 400, "bread_flour"),
         I("Yeast", "g", 5, "yeast"),
     ], notes="Water, flour and yeast are the essentials; extras are optional — max 1000 g total."),
+    R("Onion focaccia", "Dough", 14, SINGLE, [
+        I("Water", "ml", 210, "water"),
+        I("Olive oil", "tbsp", 1, "oil"),
+        I("Salt", "tsp", 0.5, "salt"),
+        I("Granulated sugar", "tsp", 1, "sugar"),
+        I("Unbleached white bread flour", "g", 350, "bread_flour"),
+        I("Easy bake (rapid-rise) dried yeast", "tsp", 1, "yeast"),
+        I("Fresh sage, chopped (kneaded in by hand)", "tbsp", 1, where="after"),
+        I("Red onion, chopped (kneaded in by hand)", "tbsp", 1, where="after"),
+        I("Olive oil (topping)", "tbsp", 2, "oil", "after"),
+        I("Red onion, thinly sliced (topping)", "pcs", 0.5, where="after"),
+        I("Fresh sage leaves (topping)", "pcs", 5, where="after"),
+        I("Coarse sea salt (topping)", "tsp", 2, where="after"),
+        I("Coarsely ground black pepper (topping), to taste", "pcs", None, where="after"),
+    ], post=[
+        "Lightly oil a 25–28 cm (10–11 in) shallow round cake tin or pizza pan.",
+        "Turn the dough out onto a lightly floured surface. Knock it back and flatten it slightly.",
+        "Sprinkle over the chopped sage and chopped red onion (1 tbsp each) and knead gently to incorporate.",
+        "Shape into a ball, flatten, then roll into a 25–28 cm round. Place in the tin, cover with oiled cling film "
+        "and leave to rise in a warm place for 20 min.",
+        "Meanwhile preheat the oven to 200 °C (fan ≈ 180 °C) / 400 °F / Gas 6.",
+        "Uncover and poke deep dimples all over the surface with your fingertips. Cover and leave to rise another "
+        "10–15 min, or until doubled.",
+        "Drizzle over 2 tbsp olive oil, then scatter the sliced onion, 5 sage leaves, 2 tsp coarse sea salt and black pepper.",
+        "Bake 20–25 min until golden. Turn out onto a wire rack, cool slightly and serve warm.",
+    ], notes="From a bread machine cookbook (Flatbreads and pizzas, p. 109). Only the dough is made in the machine "
+             "(program 14 Dough, ≈ 590 g — well within the 1000 g limit), so no rescaling is needed; shaping and "
+             "baking are done in the oven. Loading order follows the manual (liquids, salt and sugar, flour, yeast on "
+             "top) rather than the book's corners method. The sage and onion are kneaded in by hand after the "
+             "cycle, because the Dough program has no add-in beep."),
     R("Pasta dough", "Dough", 14, SINGLE, [
         I("Water", "ml", 260, "water"),
         I("Flour", "g", 400, "plain_flour"),
