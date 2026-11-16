@@ -351,11 +351,14 @@ def I(name, unit, amt, d=None, where="pan", note="", at_min=None):
 
 
 def R(name, cat, program, sizes, ings, prep=None, post=None, notes="", blade=None,
-      time_default=None, events=None):
-    return {"name": name, "category": cat, "program": program, "sizes": sizes,
-            "ingredients": ings, "prep": prep or [], "post": post or [], "notes": notes,
-            "blade": blade, "time_default": time_default, "events": events or [],
-            "builtin": True}
+      time_default=None, events=None, variants=None):
+    d = {"name": name, "category": cat, "program": program, "sizes": sizes,
+         "ingredients": ings, "prep": prep or [], "post": post or [], "notes": notes,
+         "blade": blade, "time_default": time_default, "events": events or [],
+         "builtin": True}
+    if variants:
+        d["variants"] = variants
+    return d
 
 
 FREEZE_BUCKET = ("Freeze the ice bucket (accessory) upright for up to 16 h at ≤ −18 °C. "
@@ -596,7 +599,41 @@ BUILTIN = [
              "(program 14 Dough, ≈ 590 g — well within the 1000 g limit), so no rescaling is needed; shaping and "
              "baking are done in the oven. Loading order follows the manual (liquids, salt and sugar, flour, yeast on "
              "top) rather than the book's corners method. The sage and onion are kneaded in by hand after the "
-             "cycle, because the Dough program has no add-in beep."),
+             "cycle, because the Dough program has no add-in beep.",
+       variants={
+        "Oven bake (book)": {},
+        "Bake in the machine": {
+            "post": [
+                "Lift out the pan, turn the dough out onto a lightly floured surface and pull the "
+                "kneading paddle off the shaft (use the hook if it sticks). Rinse and dry the pan.",
+                "Knock the dough back, sprinkle over the chopped sage and chopped red onion (1 tbsp each) and knead "
+                "gently to incorporate.",
+                "Brush the inside of the pan (base and sides) with a little olive oil. Without the paddle, the shaft "
+                "will leave a small hole in the base of the focaccia — that's normal.",
+                "Press the dough into the pan in an even layer, right into the corners.",
+                "Poke deep dimples all over with your fingertips. Drizzle over 2 tbsp olive oil, then scatter the "
+                "sliced onion, 5 sage leaves, 2 tsp coarse sea salt and black pepper.",
+                "Lock the pan back in, close the lid and leave to rise in the (still warm) machine, unplugged, for "
+                "25–30 min, until about doubled.",
+                "Plug in, touch BAKE (program 16), set **35 min** with +TIME/−TIME, touch START/STOP — and start "
+                "the **Stage 2 — Bake** timer in the app.",
+                "When done: unplug, oven gloves, lift out the pan, loosen the sides with a soft plastic spatula "
+                "and turn out onto a rack. Pale or soft in the middle? Run BAKE for another 5–10 min.",
+                "Optional: the machine browns from below, so the top stays paler than in an oven. For a golden top, "
+                "slide it under a hot grill for 2–3 min. Cool slightly and serve warm.",
+            ],
+            "notes": "Machine-only version: program 14 Dough, then shape and top the dough in the bread pan, "
+                     "rise in the machine and bake with program 16 Bake. It comes out thicker and loaf-shaped "
+                     "(about 4–5 cm deep, in the shape of the pan) rather than a thin round, with a softer, paler top. "
+                     "The 35 min bake time is a starting point, so check the first one; the manual lets you add more "
+                     "time with program 16.",
+            "stages": [
+                {"label": "Stage 1 — Dough", "program": 14},
+                {"label": "Stage 2 — Bake", "program": 16, "time_default": 35,
+                 "caption": "Start this after shaping, topping and the 25–30 min rise in the pan."},
+            ],
+        },
+       }),
     R("Pasta dough", "Dough", 14, SINGLE, [
         I("Water", "ml", 260, "water"),
         I("Flour", "g", 400, "plain_flour"),
@@ -1086,6 +1123,13 @@ st.markdown("""<style>
 </style>""", unsafe_allow_html=True)
 
 PAGES = ["🍞 Bake", "⏱️ Timer", "✏️ Recipes", "⚙️ Settings"]
+
+# Keep Bake-page choices (recipe, size, method, checklist ticks...) when visiting other pages:
+# Streamlit drops the state of widgets that aren't rendered, unless it is re-assigned each run.
+_KEEP = ("cat_sel", "recipe_sel|", "size|", "crust|", "method|", "stage|", "chk|")
+for _k in list(st.session_state.keys()):
+    if isinstance(_k, str) and _k.startswith(_KEEP):
+        st.session_state[_k] = st.session_state[_k]
 if st.session_state.get("page") not in PAGES:
     st.session_state.page = PAGES[0]
 if st.session_state.pop("goto", None):
@@ -1155,11 +1199,14 @@ def page_bake():
     recipes = all_recipes()
     cats = ["All"] + sorted({r["category"] for r in recipes})
     c1, c2 = st.columns([1, 3])
-    cat = c1.selectbox("Category", cats)
+    cat = c1.selectbox("Category", cats, key="cat_sel")
     pool = [r for r in recipes if cat == "All" or r["category"] == cat]
     labels = [("★ " if not r["builtin"] else "") + f"{r['name']}  ·  {r['category']}" for r in pool]
-    sel = c2.selectbox("Recipe", range(len(pool)), format_func=lambda i: labels[i])
+    sel = c2.selectbox("Recipe", range(len(pool)), format_func=lambda i: labels[i], key=f"recipe_sel|{cat}")
     r = pool[sel]
+    if r.get("variants"):
+        method = st.radio("Method", list(r["variants"]), horizontal=True, key=f"method|{r['name']}")
+        r = {**r, **r["variants"][method]}
     p = r["program"]
 
     st.subheader(r["name"])
@@ -1226,7 +1273,18 @@ def page_bake():
 
     # Timer setup
     st.markdown("### Timer")
-    timer_setup(r, size, idx, crust)
+    stages = r.get("stages")
+    if stages:
+        stage_labels = [st_["label"] for st_ in stages]
+        k = stage_labels.index(st.radio("Timer for", stage_labels, horizontal=True, key=f"stage|{r['name']}"))
+        stg = stages[k]
+        r_t = {**r, "program": stg["program"], "time_default": stg.get("time_default", r.get("time_default")),
+               "name": f"{r['name']} — {stg['label']}", "ingredients": r["ingredients"] if k == 0 else []}
+        if stg.get("caption"):
+            st.caption(stg["caption"])
+        timer_setup(r_t, size, idx, crust)
+    else:
+        timer_setup(r, size, idx, crust)
 
 
 def timer_setup(r, size, idx, crust, key_prefix="t"):
