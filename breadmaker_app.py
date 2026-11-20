@@ -1027,6 +1027,70 @@ BUILTIN = [
                         "a pan-shaped loaf with a crisp crust instead of the book's slashed torpedo.",
            },
        }),
+    R("Pain de campagne", "Dough", 14, SINGLE, [
+        I("Water (poolish)", "ml", 200, "water"),
+        I("Unbleached white bread flour (poolish)", "g", 175, "bread_flour"),
+        I("Wholemeal bread flour (poolish)", "g", 50, "wholewheat_flour"),
+        I("Easy bake (rapid-rise) dried yeast (poolish)", "tsp", 0.25, "yeast"),
+        I("Water (dough)", "ml", 120, "water", "stage2"),
+        I("Salt (dough)", "ml", 7.5, "salt", "stage2"),
+        I("Granulated sugar (dough)", "ml", 2.5, "sugar", "stage2"),
+        I("Unbleached white bread flour (dough), plus extra for dusting", "g", 225, "bread_flour", "stage2"),
+        I("Wholemeal bread flour (dough)", "g", 50, "wholewheat_flour", "stage2"),
+        I("Rye flour (dough)", "g", 25, "rye_flour", "stage2"),
+        I("Easy bake dried yeast (dough)", "ml", 2.5, "yeast", "stage2"),
+    ], post=[
+        "Turn the dough out onto a lightly floured surface, knock it back gently and shape into a plump, round ball. "
+        "Place on a lightly oiled baking sheet.",
+        "Cover with a large glass bowl or lightly oiled cling film and leave in a warm place 30–45 min, until almost "
+        "doubled. Meanwhile preheat the oven to 220 °C (fan ≈ 200 °C) / 425 °F / Gas 7.",
+        "Dust the top with flour. Cut three parallel slashes across the loaf, then three more at right angles to them.",
+        "Bake on a shelf near the bottom of the oven for about 40 min, until golden and hollow-sounding when tapped "
+        "on the base. Cool on a wire rack.",
+    ], notes="Adapted from a bread machine cookbook (Sourdoughs and starter dough breads, p. 124). One size only, "
+             "≈ 860 g in the pan — within the 1000 g limit, so no rescaling. Three stages: poolish on program 14 "
+             "Dough, a 2–8 h rest in the switched-off machine, then the dough ingredients on top and program 14 "
+             "again. Use the 'Timer for' selector for each stage. Salt and sugar go in with the water under the "
+             "flour, yeast in a hollow on top (manual's order).",
+       stage2={"program": 14, "timer_label": "Stage 3 — Dough", "between": [
+            "When the dough program ends, switch the machine off (unplug) but leave the poolish inside with the lid "
+            "closed for **2–8 hours** — longer gives a more sour flavour. Set the time and start the **Stage 2 — "
+            "Poolish rest** timer.",
+            "Then lift out the bread pan and add the dough ingredients on top of the poolish:",
+        ]},
+       stages=[
+            {"label": "Stage 1 — Poolish", "program": 14, "done_title": "Poolish mixed — start the rest"},
+            {"label": "Stage 2 — Poolish rest", "program": 14, "range_h": (2, 8, 4), "phase_name": "Poolish resting",
+             "done_title": "Poolish ready — add the dough ingredients",
+             "caption": "Start this when the poolish's dough program ends and the machine is switched off. "
+                        "2 h = mild, 8 h = most sour."},
+            {"label": "Stage 3 — Dough", "program": 14, "done_title": "Dough ready — shape the loaf"},
+        ],
+       variants={
+           "Oven bake (book)": {},
+           "Bake in the machine": {
+               "sizes": ["1000 g"],
+               "stage2": {"program": 2, "timer_label": "Stage 3 — Bake", "between": [
+            "When the dough program ends, switch the machine off (unplug) but leave the poolish inside with the lid "
+            "closed for **2–8 hours** — longer gives a more sour flavour. Set the time and start the **Stage 2 — "
+            "Poolish rest** timer.",
+            "Then lift out the bread pan and add the dough ingredients on top of the poolish:",
+        ]},
+               "stages": [
+            {"label": "Stage 1 — Poolish", "program": 14, "done_title": "Poolish mixed — start the rest"},
+            {"label": "Stage 2 — Poolish rest", "program": 14, "range_h": (2, 8, 4), "phase_name": "Poolish resting",
+             "done_title": "Poolish ready — add the dough ingredients",
+             "caption": "Start this when the poolish's dough program ends and the machine is switched off. "
+                        "2 h = mild, 8 h = most sour."},
+            {"label": "Stage 3 — Bake", "program": 2},
+        ],
+               "post": [],
+               "notes": "Machine-baked loaf: poolish and rest as in the book, then the dough ingredients go on top "
+                        "and the loaf is made on program 2 French bread, WEIGHT 1000 g (≈ 860 g in the pan), "
+                        "medium crust — no butter or milk, so it suits the French program. You get a pan-shaped "
+                        "loaf instead of the book's floured, cross-slashed round.",
+           },
+       }),
     R("Pasta dough", "Dough", 14, SINGLE, [
         I("Water", "ml", 260, "water"),
         I("Flour", "g", 400, "plain_flour"),
@@ -1259,6 +1323,8 @@ def build_steps(r, idx, size, crust, cup):
     if st2:
         S += st2.get("between", [])
         for i in by("stage2"):
+            if i.get("d") in ("yeast", "baking_powder", "baking_soda"):
+                S.append("Make a shallow hollow in the flour for the yeast — keep it away from salt and liquids.")
             S.append("Add to pan: " + ing_line(i, idx, cup))
         p = st2["program"]
         S.append("Lock the pan in, close the lid gently and plug in.")
@@ -1743,8 +1809,15 @@ def page_bake():
                "done_title": stg.get("done_title"), "events": []}
         if stg.get("caption"):
             st.caption(stg["caption"])
-        if stg.get("fixed_min"):
-            ph = [{"name": stg.get("phase_name", stg["label"]), "sec": int(stg["fixed_min"] * 60)}]
+        if stg.get("fixed_min") or stg.get("range_h"):
+            mins = stg.get("fixed_min")
+            if stg.get("range_h"):
+                lo, hi, dflt = stg["range_h"]
+                hrs = st.select_slider("Rest time", options=list(range(lo, hi + 1)), value=dflt,
+                                       format_func=lambda h: f"{h} h", key=f"fxh|{r_t['name']}")
+                mins = hrs * 60
+            stg = {**stg, "fixed_min": mins}
+            ph = [{"name": stg.get("phase_name", stg["label"]), "sec": int(mins * 60)}]
             existing = load_run()
             ok = True
             if existing:
