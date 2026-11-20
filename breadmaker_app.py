@@ -166,6 +166,7 @@ WHERE = {
     "box_or_beep": "Ingredients box or at beep",
     "timed": "At a set minute (alert)",
     "prep": "Preparation (outside machine)",
+    "prebake": "Brushed/sprinkled on just before baking (alert)",
     "midbake": "Brushed on halfway through baking (alert)",
     "after": "After the program (topping/finishing)",
 }
@@ -425,6 +426,29 @@ BUILTIN = [
         I("Yeast", "g", [6, 4, 3], "yeast"),
         I("Walnuts or pine nuts, coarsely chopped", "g", [60, 45, 30], "walnuts", "box_or_beep"),
     ], notes="Contains egg — don't use the machine's delay timer."),
+    R("Corn meal bread", "Bread", 1, SIZES3, [
+        I("Warm water", "ml", [220, 185, 115], "water"),
+        I("Lukewarm milk", "ml", [135, 80, 65], "milk"),
+        I("Corn oil", "ml", [30, 20, 10], "oil"),
+        I("Salt", "ml", [7.5, 5, 3.75], "salt"),
+        I("Light muscovado (brown) sugar", "ml", [10, 8.75, 5], "brown_sugar"),
+        I("Unbleached white bread flour", "g", [390, 310, 210], "bread_flour"),
+        I("Fine corn meal (maize meal)", "g", [195, 130, 75], "cornmeal"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", [7.5, 5, 3.75], "yeast"),
+        I("Brush the top with water", "pcs", None, where="prebake"),
+        I("Sprinkle with coarse polenta", "pcs", None, where="prebake"),
+    ], notes="Adapted from a bread machine cookbook (Basic breads, p. 70). The book's loaves weigh ≈ 640 / 840 / "
+             "1020 g, so each machine size uses the nearest book size, scaled: 1000 g = Large × 0.97 (≈ 990 g, "
+             "just under the limit), 750 g = Medium × 0.88 (≈ 745 g), 500 g = Small × 0.77 (≈ 490 g). The book "
+             "prefers a rapid program. This machine's only fast program, 7 Quick bread, is described in the manual "
+             "mainly for baking-powder breads and gives a small, dense loaf, so program 1 Basic is the default and "
+             "Quick bread is offered under Method. On Quick bread, if the LCD shows less than 1:50, use warm milk "
+             "and water as the book advises. Medium crust. Expect a slightly shallow, crumbly loaf. Salt and sugar "
+             "go in with the liquids (manual's order).",
+       variants={
+           "Basic program": {},
+           "Quick bread program (book's rapid)": {"program": 7, "blade": False},
+       }),
     R("Classic French bread", "Bread", 2, SIZES3, [
         I("Water", "ml", [340, 250, 170], "water"),
         I("Salt", "g", [8, 6, 4], "salt"),
@@ -912,6 +936,11 @@ def build_steps(r, idx, size, crust, cup):
     if blade_enabled(r) and p in BREAD_PROGS:
         S.append("At the paddle alert (ferment icon, phase 2): **unplug** (max 10 min!), lift out the pan, take the dough out "
                  "with floured hands, pull off the paddle, put the dough back, lock the pan, close the lid, plug back in — the program resumes.")
+    pre = by("prebake")
+    if pre:
+        S.append("Just before the bake phase starts (app alerts ~2 min ahead): open the lid briefly, then "
+                 + "; ".join(ing_line(i, idx, cup) for i in pre)
+                 + ". Close the lid straight away.")
     for i in by("midbake"):
         S.append("Halfway through the bake (app alerts): open the lid briefly, brush the top of the loaf with "
                  + ing_line(i, idx, cup) + " using a pastry brush, and close the lid straight away.")
@@ -953,6 +982,16 @@ def build_events(r, phases, idx, cup, blade_on):
                 f"Add {i['name']}: {m}" + (f" (≈ {v})" if v and v != "—" else ""), "add")
     for e in r.get("events", []):
         add(float(e.get("min", 0)) * 60, "Reminder", e.get("msg", ""), "add")
+    pres = [i for i in r["ingredients"] if i.get("where") == "prebake"]
+    if pres:
+        cum = 0
+        for ph in phases:
+            if ph["name"].lower().startswith("bake"):
+                add(max(0, cum - 120), "Glaze & topping before baking",
+                    "Baking starts in ~2 min: open the lid briefly, "
+                    + "; ".join(i["name"][0].lower() + i["name"][1:] for i in pres) + ", close the lid.", "add")
+                break
+            cum += ph["sec"]
     mids = [i for i in r["ingredients"] if i.get("where") == "midbake"]
     if mids:
         cum = 0
@@ -1403,7 +1442,7 @@ def timer_setup(r, size, idx, crust, key_prefix="t"):
     blade_on = False
     if p in BREAD_PROGS:
         blade_on = st.checkbox("Alert me to remove the kneading paddle (start of Ferment 2)",
-                               value=blade_enabled(r), key=f"{key_prefix}bl|{r['name']}")
+                               value=blade_enabled(r), key=f"{key_prefix}bl|{r['name']}|{p}")
 
     if phases:
         with st.expander(f"Phase plan · total {hms(sum(ph['sec'] for ph in phases))}"):
