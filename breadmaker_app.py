@@ -406,6 +406,21 @@ BUILTIN = [
              "500 g loaf is the Small scaled by ⅔. Program 1 Basic, medium or light crust. Salt and sugar go in "
              "with the liquids (manual's order). If your mash already has milk and butter in it, use a little less "
              "water. The app alerts you halfway through the bake to brush on the milk."),
+    R("Light rye and caraway bread", "Bread", 1, SIZES3, [
+        I("Water", "ml", [300, 210, 170], "water"),
+        I("Lemon juice", "ml", [10, 5, 3.75], "lemon_juice"),
+        I("Sunflower oil", "ml", [22, 15, 12.5], "oil"),
+        I("Salt", "ml", [7.5, 5, 3.75], "salt"),
+        I("Light muscovado (brown) sugar", "ml", [15, 10, 7.5], "brown_sugar"),
+        I("Rye flour", "g", [125, 85, 70], "rye_flour"),
+        I("Unbleached white bread flour", "g", [375, 285, 230], "bread_flour"),
+        I("Skimmed milk powder", "ml", [22, 15, 12.5], "milk_powder"),
+        I("Caraway seeds", "ml", [7.5, 5, 3.75], "caraway"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", [5, 3.75, 2.5], "yeast"),
+    ], notes="Adapted from a bread machine cookbook (Basic breads, p. 75). The book's Medium (≈ 865 g) is used "
+             "for 1000 g and its Small (≈ 625 g) for 750 g; its Large (≈ 1.02 kg) is just over the 1000 g limit, "
+             "so the 500 g loaf is the Small scaled by 0.8. Program 1 Basic, medium crust, as the book says. Salt "
+             "and sugar go in with the liquids (manual's order); milk powder and caraway on top of the flour."),
     R("Sesame bread", "Bread", 1, SIZES3, [
         I("Water", "ml", [320, 250, 160], "water"),
         I("Salt", "g", [8, 6, 4], "salt"),
