@@ -151,6 +151,7 @@ DENSITY = {
     "chocolate": ("Chocolate, chopped", 0.72),
     "muesli": ("Muesli (unsweetened)", 0.40),
     "barley_flour": ("Barley flour", 0.48),
+    "buckwheat_flour": ("Buckwheat flour", 0.50),
     "pumpkin_seeds": ("Pumpkin seeds", 0.55),
     "honey": ("Honey", 1.42),
     "dates": ("Dates, chopped", 0.60),
@@ -589,6 +590,23 @@ BUILTIN = [
            "Whole wheat program (manual)": {},
            "Basic program (book)": {"program": 1},
        }),
+    R("Buckwheat and walnut bread", "Bread", 8, SIZES3, [
+        I("Water", "ml", [315, 210, 155], "water"),
+        I("Molasses", "ml", [15, 10, 7.5], "molasses"),
+        I("Walnut or olive oil", "ml", [30, 30, 22], "oil"),
+        I("Salt", "ml", [7.5, 5, 3.75], "salt"),
+        I("Granulated sugar", "ml", [3.75, 2.5, 1.25], "sugar"),
+        I("Unbleached white bread flour", "g", [425, 325, 235], "bread_flour"),
+        I("Buckwheat flour", "g", [75, 50, 35], "buckwheat_flour"),
+        I("Skimmed milk powder", "ml", [22, 15, 11.25], "milk_powder"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", [5, 5, 3.75], "yeast"),
+        I("Walnut pieces", "g", [50, 40, 30], "walnuts", "box_or_beep"),
+    ], notes="Adapted from a bread machine cookbook (Speciality grains, p. 89). The book's Medium (≈ 935 g) is used "
+             "for 1000 g and its Small (≈ 680 g) for 750 g; its Large (≈ 1.12 kg) is over the 1000 g limit, so the "
+             "500 g loaf is the Small scaled by 0.73. The book's 'basic, raisin setting' is this machine's program 8 "
+             "Fruit bread (bakes like Basic, with the add-in release); medium crust. Walnuts go in the ingredients "
+             "box, as the book suggests for an automatic dispenser. Salt and sugar go in with the liquids "
+             "(manual's order). A compact loaf is normal."),
     R("Sweet bread", "Bread", 4, SIZES3, [
         I("Water", "ml", [280, 220, 140], "water"),
         I("Egg", "pcs", [2, 1, 1]),
