@@ -150,6 +150,8 @@ DENSITY = {
     "choc_spread": ("Hazelnut nougat cream", 1.25),
     "chocolate": ("Chocolate, chopped", 0.72),
     "muesli": ("Muesli (unsweetened)", 0.40),
+    "barley_flour": ("Barley flour", 0.48),
+    "pumpkin_seeds": ("Pumpkin seeds", 0.55),
     "honey": ("Honey", 1.42),
     "dates": ("Dates, chopped", 0.60),
     "molasses": ("Molasses / black treacle", 1.40),
@@ -829,6 +831,54 @@ BUILTIN = [
                         "(manual). Medium crust. The result is a tall loaf in the shape of the pan rather than the "
                         "book's scored round. Add 1 tbsp more water if the dough looks too firm during the first "
                         "knead.",
+           },
+       }),
+    R("Barley-enriched farmhouse loaf", "Dough", 14, SINGLE, [
+        I("Water", "ml", 260, "water"),
+        I("Double (heavy) cream", "ml", 45, "cream"),
+        I("Granulated sugar", "ml", 10, "sugar"),
+        I("Salt", "ml", 10, "salt"),
+        I("Unbleached white bread flour", "g", 400, "bread_flour"),
+        I("Barley flour", "g", 115, "barley_flour"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", 7.5, "yeast"),
+        I("Pumpkin seeds", "g", 25, "pumpkin_seeds", "lateknead"),
+    ], post=[
+        "Lightly oil a 900 g (2 lb) loaf tin, about 18.5 × 12 cm.",
+        "When the dough cycle has finished, turn the dough out onto a lightly floured surface and knock it back "
+        "gently.",
+        "Shape into a rectangle with the long side the same length as the tin. Roll it up lengthways, tuck the ends "
+        "under and place it in the tin, seam underneath.",
+        "Cover with oiled cling film and leave 30–45 min, until the dough reaches the top of the tin. (Start "
+        "preheating the oven towards the end of this rise so it's hot in time.)",
+        "Preheat the oven to 220 °C (fan ≈ 200 °C) / 425 °F / Gas 7.",
+        "Dust the loaf with flour, make one deep lengthways cut along the top and leave to rest 10 min.",
+        "Bake 15 min, then reduce to 200 °C (fan ≈ 180 °C) / 400 °F / Gas 6 and bake 20–25 min more, until golden "
+        "and hollow-sounding when tapped on the base. Cool on a wire rack.",
+    ], notes="Adapted from a bread machine cookbook (Speciality grains). One size only, ≈ 870 g of dough — "
+             "within the 1000 g limit, so no rescaling. Program 14 Dough has no add-in beep, so the app alerts you "
+             "about 5 min before kneading is due to end to add the pumpkin seeds (the book's 'last 5 minutes of "
+             "kneading'); that time is estimated from the LCD total. Sugar and salt go in with the liquids "
+             "(manual's order).",
+       variants={
+           "Oven bake (book)": {},
+           "Bake in the machine": {
+               "program": 1,
+               "sizes": ["1000 g"],
+               "ingredients": [
+        I("Water", "ml", 260, "water"),
+        I("Double (heavy) cream", "ml", 45, "cream"),
+        I("Granulated sugar", "ml", 10, "sugar"),
+        I("Salt", "ml", 10, "salt"),
+        I("Unbleached white bread flour", "g", 400, "bread_flour"),
+        I("Barley flour", "g", 115, "barley_flour"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", 7.5, "yeast"),
+        I("Pumpkin seeds", "g", 25, "pumpkin_seeds", "box"),
+    ],
+               "post": [],
+               "notes": "Machine-baked loaf: program 1 Basic, WEIGHT 1000 g (≈ 870 g in the pan), medium crust "
+                        "(dark if you want it crustier, like the book's). The pumpkin seeds are dry, so they go in "
+                        "the ingredients box and drop in automatically at the add-in point. You won't get the "
+                        "book's floured, slashed top, and the loaf is the shape of the pan.",
            },
        }),
     R("Pasta dough", "Dough", 14, SINGLE, [
