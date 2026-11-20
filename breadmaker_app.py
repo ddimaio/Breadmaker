@@ -372,7 +372,7 @@ def I(name, unit, amt, d=None, where="pan", note="", at_min=None):
 
 
 def R(name, cat, program, sizes, ings, prep=None, post=None, notes="", blade=None,
-      time_default=None, events=None, variants=None, stage2=None, stages=None):
+      time_default=None, events=None, variants=None, stage2=None, stages=None, stage1_steps=None):
     d = {"name": name, "category": cat, "program": program, "sizes": sizes,
          "ingredients": ings, "prep": prep or [], "post": post or [], "notes": notes,
          "blade": blade, "time_default": time_default, "events": events or [],
@@ -383,6 +383,8 @@ def R(name, cat, program, sizes, ings, prep=None, post=None, notes="", blade=Non
         d["stage2"] = stage2
     if stages:
         d["stages"] = stages
+    if stage1_steps:
+        d["stage1_steps"] = stage1_steps
     return d
 
 
@@ -1091,6 +1093,81 @@ BUILTIN = [
                         "loaf instead of the book's floured, cross-slashed round.",
            },
        }),
+    R("Ciabatta", "Dough", 14, SINGLE, [
+        I("Water (biga)", "ml", 200, "water"),
+        I("Unbleached white bread flour (biga)", "g", 175, "bread_flour"),
+        I("Easy bake (rapid-rise) dried yeast (biga)", "ml", 2.5, "yeast"),
+        I("Water (dough)", "ml", 200, "water", "stage2"),
+        I("Milk (dough)", "ml", 30, "milk", "stage2"),
+        I("Extra virgin olive oil (dough)", "ml", 30, "oil", "stage2"),
+        I("Salt (dough)", "ml", 7.5, "salt", "stage2"),
+        I("Granulated sugar (dough)", "ml", 2.5, "sugar", "stage2"),
+        I("Unbleached white bread flour (dough), plus extra for dusting", "g", 325, "bread_flour", "stage2"),
+        I("Easy bake dried yeast (dough)", "tsp", 0.25, "yeast", "stage2"),
+    ], stage1_steps=["Tap START, start the **Stage 1 — Biga mix** timer (5 min), and let it mix for 5 minutes.", "When the timer goes off, switch the machine off: hold START/STOP for about 3 seconds until it beeps."], post=[
+        "Transfer the dough to a bowl, cover with oiled cling film and leave about 1 h, "
+        "until tripled in size — start the **Stage 4 — Bowl rise** timer. The dough is meant to be very wet: don't "
+        "add more flour.",
+        "Sprinkle two baking sheets with flour.",
+        "With a spoon or dough scraper divide the dough in two. Carefully tip one portion onto a baking sheet, trying "
+        "not to knock the air out. With well-floured hands shape it into a rectangular loaf about 2.5 cm thick, "
+        "pulling and stretching as needed. Repeat with the other portion.",
+        "Sprinkle both loaves with flour and leave uncovered in a warm place 20–30 min — they will spread and rise. "
+        "Meanwhile preheat the oven to 220 °C (fan ≈ 200 °C) / 425 °F / Gas 7.",
+        "Bake 25–30 min, until risen, light golden and hollow-sounding when tapped on the base. Cool on a wire rack. "
+        "Serve with butter or olive oil for dipping.",
+    ], notes="Adapted from a bread machine cookbook (Sourdoughs and starter dough breads, p. 125). Makes 2 loaves "
+             "from ≈ 970 g of dough — within the 1000 g limit, so no rescaling. Four stages: the biga is mixed for "
+             "5 min on program 14 Dough and the machine switched off; it rests 12 h or more; the dough ingredients "
+             "go on top for a full Dough program; then the dough rises 1 h in a bowl before shaping. The dough is "
+             "extremely wet by design. Salt and sugar go in with the liquids under the flour (manual's order).",
+       stage2={"program": 14, "timer_label": "Stage 3 — Dough", "between": [
+            "Leave the biga in the machine (lid closed, switched off), or in a large bowl covered with lightly oiled "
+            "cling film, **overnight or at least 12 hours**, until it has risen and is just starting to collapse — "
+            "start the **Stage 2 — Biga rest** timer.",
+            "Return the biga to the bread pan if you moved it, then add the ciabatta dough ingredients:",
+        ]},
+       stages=[
+            {"label": "Stage 1 — Biga mix", "program": 14, "fixed_min": 5, "phase_name": "Mixing the biga",
+             "done_title": "Stop the machine now", "done_msg": "Hold START/STOP ~3 s to switch off, then start the biga rest.",
+             "caption": "Start this when you tap START on program 14 Dough."},
+            {"label": "Stage 2 — Biga rest", "program": 14, "range_h": (12, 18, 12), "phase_name": "Biga resting",
+             "done_title": "Biga ready — add the dough ingredients",
+             "caption": "Overnight or at least 12 h, until risen and just starting to collapse."},
+            {"label": "Stage 3 — Dough", "program": 14, "done_title": "Dough ready — into a bowl to rise"},
+            {"label": "Stage 4 — Bowl rise", "program": 14, "fixed_min": 60, "phase_name": "Rising in the bowl",
+             "done_title": "Dough tripled — shape the loaves", "done_msg": "Divide, shape on the floured sheets, rest 20–30 min, preheat the oven.",
+             "caption": "Start this when the dough goes into the bowl."},
+        ],
+       variants={
+           "Oven bake (book)": {},
+           "Bake in the machine": {
+               "sizes": ["1000 g"],
+               "blade": False,
+               "stage2": {"program": 1, "timer_label": "Stage 3 — Bake", "between": [
+            "Leave the biga in the machine (lid closed, switched off), or in a large bowl covered with lightly oiled "
+            "cling film, **overnight or at least 12 hours**, until it has risen and is just starting to collapse — "
+            "start the **Stage 2 — Biga rest** timer.",
+            "Return the biga to the bread pan if you moved it, then add the ciabatta dough ingredients:",
+        ]},
+               "stages": [
+            {"label": "Stage 1 — Biga mix", "program": 14, "fixed_min": 5, "phase_name": "Mixing the biga",
+             "done_title": "Stop the machine now", "done_msg": "Hold START/STOP ~3 s to switch off, then start the biga rest.",
+             "caption": "Start this when you tap START on program 14 Dough."},
+            {"label": "Stage 2 — Biga rest", "program": 14, "range_h": (12, 18, 12), "phase_name": "Biga resting",
+             "done_title": "Biga ready — add the dough ingredients",
+             "caption": "Overnight or at least 12 h, until risen and just starting to collapse."},
+            {"label": "Stage 3 — Bake", "program": 1},
+        ],
+               "post": [],
+               "notes": "Machine-baked loaf: biga as in the book, then the dough ingredients go on top and the loaf "
+                        "is made on program 1 Basic, WEIGHT 1000 g (≈ 970 g in the pan), medium crust. Basic rather "
+                        "than French because the dough contains milk (the manual says the French program isn't "
+                        "suitable for milk). The dough is very wet, so leave the kneading paddle in rather than "
+                        "trying to remove it. You get one open-textured, pan-shaped loaf — not the book's two flat "
+                        "ciabatte.",
+           },
+       }),
     R("Pasta dough", "Dough", 14, SINGLE, [
         I("Water", "ml", 260, "water"),
         I("Flour", "g", 400, "plain_flour"),
@@ -1292,9 +1369,12 @@ def build_steps(r, idx, size, crust, cup):
     if p in CRUST_PROGS:
         setting += f" · BURNING COLOR → **{crust}**"
     S.append(setting + ".")
-    if p != 17:
-        S.append("Read the total time on the LCD and enter it in the timer box below.")
-    S.append("Tap START on the machine and **Start timer** in the app at the same moment.")
+    if r.get("stage1_steps"):
+        S += r["stage1_steps"]
+    else:
+        if p != 17:
+            S.append("Read the total time on the LCD and enter it in the timer box below.")
+        S.append("Tap START on the machine and **Start timer** in the app at the same moment.")
 
     beep = by("beep")
     if beep:
@@ -1451,7 +1531,8 @@ def build_events(r, phases, idx, cup, blade_on):
         add(total, "Jam is ready", "Oven gloves; hold the pan level, pour into heat-proof jars.", "done")
     else:
         add(total, r.get("done_title") or f"{PROGRAMS.get(p, 'Program')} finished",
-            "Unplug and remove the contents." if not r.get("done_title") else "Time for the next step.", "done")
+            r.get("done_msg") or ("Unplug and remove the contents." if not r.get("done_title") else "Time for the next step."),
+            "done")
     return sorted(ev, key=lambda e: e["at"])
 
 
@@ -1806,7 +1887,7 @@ def page_bake():
         stg = stages[k]
         r_t = {**r, "program": stg["program"], "time_default": stg.get("time_default", r.get("time_default")),
                "name": f"{r['name']} — {stg['label']}", "ingredients": r["ingredients"] if k == 0 else [],
-               "done_title": stg.get("done_title"), "events": []}
+               "done_title": stg.get("done_title"), "done_msg": stg.get("done_msg"), "events": []}
         if stg.get("caption"):
             st.caption(stg["caption"])
         if stg.get("fixed_min") or stg.get("range_h"):
@@ -1822,7 +1903,8 @@ def page_bake():
             ok = True
             if existing:
                 ok = st.checkbox(f"Replace the running timer ({existing['recipe']})", key=f"fxrep|{r_t['name']}")
-            if st.button(f"▶️ Start {stg['fixed_min'] / 60:g} h timer", type="primary", width="stretch",
+            lab = f"{mins / 60:g} h" if mins >= 60 else f"{mins:g} min"
+            if st.button(f"▶️ Start {lab} timer", type="primary", width="stretch",
                          disabled=not ok, key=f"fxgo|{r_t['name']}"):
                 start_run(r_t, size, idx, crust, ph, False, CUP)
                 st.session_state.goto = True
