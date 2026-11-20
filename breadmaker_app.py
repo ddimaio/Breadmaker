@@ -152,6 +152,10 @@ DENSITY = {
     "muesli": ("Muesli (unsweetened)", 0.40),
     "barley_flour": ("Barley flour", 0.48),
     "buckwheat_flour": ("Buckwheat flour", 0.50),
+    "rolled_oats": ("Rolled oats", 0.36),
+    "polenta": ("Polenta (coarse)", 0.65),
+    "golden_syrup": ("Golden syrup", 1.40),
+    "cooked_rice": ("Cooked rice", 0.70),
     "pumpkin_seeds": ("Pumpkin seeds", 0.55),
     "honey": ("Honey", 1.42),
     "dates": ("Dates, chopped", 0.60),
@@ -897,6 +901,59 @@ BUILTIN = [
                         "(dark if you want it crustier, like the book's). The pumpkin seeds are dry, so they go in "
                         "the ingredients box and drop in automatically at the add-in point. You won't get the "
                         "book's floured, slashed top, and the loaf is the shape of the pan.",
+           },
+       }),
+    R("Wild rice, oat and polenta bread", "Dough", 14, SINGLE, [
+        I("Water", "ml", 270, "water"),
+        I("Sunflower oil", "tbsp", 1.75, "oil"),
+        I("Golden (light corn) syrup", "tbsp", 1.75, "golden_syrup"),
+        I("Salt", "tsp", 1.75, "salt"),
+        I("Unbleached white bread flour", "g", 290, "bread_flour"),
+        I("Strong wholemeal (whole-wheat) flour", "g", 45, "wholewheat_flour"),
+        I("Polenta", "g", 45, "polenta"),
+        I("Rolled oats", "g", 45, "rolled_oats"),
+        I("Skimmed milk powder", "tbsp", 1.75, "milk_powder"),
+        I("Easy bake (rapid-rise) dried yeast", "tsp", 1, "yeast"),
+        I("Cooked wild rice, drained and cooled (from 45 g raw)", "g", 150, "cooked_rice", "lateknead"),
+    ], prep=["Cook 45 g wild rice in boiling salted water as the packet says (wild rice takes 40–60 min). Drain well and "
+             "let it cool. You need about 150 g cooked."], post=[
+        "Lightly oil a 23 × 13 cm (9 × 5 in) loaf tin.",
+        "When the dough cycle has finished, turn the dough out onto a lightly floured surface and knock it back gently.",
+        "Divide into six equal pieces. Shape each into an oblong mini loaf about 13 cm long, and place them "
+        "widthways, side by side, in the tin.",
+        "Cover with lightly oiled cling film and leave in a warm place 30–45 min, until the dough almost reaches the "
+        "top of the tin. Meanwhile preheat the oven to 220 °C (fan ≈ 200 °C) / 425 °F / Gas 7.",
+        "Bake 30–35 min, until golden and hollow-sounding when tapped on the base. Turn out onto a wire rack to cool.",
+    ], notes="Adapted from a bread machine cookbook (Speciality grains, p. 90). The book's quantities come to "
+             "≈ 1.02 kg with the cooked rice (wild rice roughly triples in weight), just over the 1000 g limit "
+             "including all ingredients, so everything is scaled by 0.9 to ≈ 930 g. Program 14 Dough has no add-in "
+             "beep, so the app alerts you about 5 min before kneading is due to end to add the rice (the book's "
+             "'last 5 minutes of kneading'). Syrup and salt go in with the water (manual's order). Variation: long "
+             "grain brown or white rice (quicker to cook) or red Camargue rice (≈ 1 h) instead of wild rice.",
+       variants={
+           "Oven bake (book)": {},
+           "Bake in the machine": {
+               "program": 8,
+               "sizes": ["1000 g"],
+               "blade": True,
+               "ingredients": [
+        I("Water", "ml", 270, "water"),
+        I("Sunflower oil", "tbsp", 1.75, "oil"),
+        I("Golden (light corn) syrup", "tbsp", 1.75, "golden_syrup"),
+        I("Salt", "tsp", 1.75, "salt"),
+        I("Unbleached white bread flour", "g", 290, "bread_flour"),
+        I("Strong wholemeal (whole-wheat) flour", "g", 45, "wholewheat_flour"),
+        I("Polenta", "g", 45, "polenta"),
+        I("Rolled oats", "g", 45, "rolled_oats"),
+        I("Skimmed milk powder", "tbsp", 1.75, "milk_powder"),
+        I("Easy bake (rapid-rise) dried yeast", "tsp", 1, "yeast"),
+        I("Cooked wild rice, drained and cooled (from 45 g raw)", "g", 150, "cooked_rice", "beep"),
+    ],
+               "post": [],
+               "notes": "Machine-baked loaf: program 8 Fruit bread, WEIGHT 1000 g (≈ 930 g in the pan), medium "
+                        "crust. The cooked rice is wet, so it goes straight into the pan at the add-in beep, not in "
+                        "the ingredients box (manual). You get one pan-shaped loaf instead of the book's six "
+                        "pull-apart mini loaves.",
            },
        }),
     R("Pasta dough", "Dough", 14, SINGLE, [
