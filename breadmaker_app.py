@@ -151,6 +151,8 @@ DENSITY = {
     "chocolate": ("Chocolate, chopped", 0.72),
     "muesli": ("Muesli (unsweetened)", 0.40),
     "barley_flour": ("Barley flour", 0.48),
+    "beer": ("Beer (flat)", 1.01),
+    "mustard": ("Wholegrain mustard", 1.05),
     "buckwheat_flour": ("Buckwheat flour", 0.50),
     "rolled_oats": ("Rolled oats", 0.36),
     "polenta": ("Polenta (coarse)", 0.65),
@@ -444,6 +446,23 @@ BUILTIN = [
              "for 1000 g and its Small (≈ 625 g) for 750 g; its Large (≈ 1.02 kg) is just over the 1000 g limit, "
              "so the 500 g loaf is the Small scaled by 0.8. Program 1 Basic, medium crust, as the book says. Salt "
              "and sugar go in with the liquids (manual's order); milk powder and caraway on top of the flour."),
+    R("Grainy mustard and beer loaf", "Bread", 1, SIZES3, [
+        I("Flat beer", "ml", [280, 210, 160], "beer"),
+        I("Vegetable oil", "ml", [15, 15, 11.25], "oil"),
+        I("Wholegrain mustard", "ml", [45, 30, 22.5], "mustard"),
+        I("Salt", "ml", [7.5, 5, 3.75], "salt"),
+        I("Granulated sugar", "ml", [10, 7.5, 6.25], "sugar"),
+        I("Unbleached white bread flour", "g", [350, 250, 195], "bread_flour"),
+        I("Wholemeal (whole-wheat) bread flour", "g", [150, 125, 95], "wholewheat_flour"),
+        I("Skimmed milk powder", "ml", [22, 15, 11.25], "milk_powder"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", [5, 5, 3.75], "yeast"),
+    ], prep=["Open the beer at least 1 hour before you start so it goes flat. Pale ale gives a subtler taste, "
+             "brown ale a stronger one."],
+       notes="Adapted from a bread machine cookbook (Savoury breads, p. 134). The book's Medium (≈ 870 g) is used "
+             "for 1000 g and its Small (≈ 650 g) for 750 g; its Large (≈ 1.04 kg) is over the 1000 g limit, so the "
+             "500 g loaf is the Small scaled by 0.77. Program 1 Basic, medium crust, as the book says. Mustard, salt "
+             "and sugar go in with the beer and oil (manual's order); milk powder on top of the flour. Great with "
+             "cheese and pickles."),
     R("Sesame bread", "Bread", 1, SIZES3, [
         I("Water", "ml", [320, 250, 160], "water"),
         I("Salt", "g", [8, 6, 4], "salt"),
