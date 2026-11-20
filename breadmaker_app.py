@@ -198,7 +198,7 @@ def spoon_text(ml, coarse=False):
     tbsp = int(ml // TBSP_ML)
     step = 1 if coarse else 4  # whole tsp next to cups, quarter tsp otherwise
     tsp = round((ml - tbsp * TBSP_ML) / TSP_ML * step) / step
-    if tsp >= 2.5 or (tbsp and tsp > 2.25):
+    if tsp >= 3:
         tbsp, tsp = tbsp + 1, 0
     parts = []
     if tbsp:
