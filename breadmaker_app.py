@@ -149,6 +149,9 @@ DENSITY = {
     "spice": ("Ground spice mix", 0.47),
     "choc_spread": ("Hazelnut nougat cream", 1.25),
     "chocolate": ("Chocolate, chopped", 0.72),
+    "muesli": ("Muesli (unsweetened)", 0.40),
+    "honey": ("Honey", 1.42),
+    "dates": ("Dates, chopped", 0.60),
     "molasses": ("Molasses / black treacle", 1.40),
     "oat_bran": ("Oat bran", 0.40),
     "breadcrumbs": ("Dried breadcrumbs", 0.42),
@@ -167,6 +170,7 @@ WHERE = {
     "box_or_beep": "Ingredients box or at beep",
     "timed": "At a set minute (alert)",
     "prep": "Preparation (outside machine)",
+    "lateknead": "By hand in the last minutes of kneading (alert)",
     "prebake": "Brushed/sprinkled on just before baking (alert)",
     "midbake": "Brushed on halfway through baking (alert)",
     "after": "After the program (topping/finishing)",
@@ -777,6 +781,56 @@ BUILTIN = [
             ],
         },
        }),
+    R("Muesli and date bread", "Dough", 14, SINGLE, [
+        I("Water", "ml", 260, "water", note="add 1 tbsp more if the dough is too firm (depends on the muesli)"),
+        I("Sunflower oil", "ml", 30, "oil"),
+        I("Clear honey", "ml", 15, "honey"),
+        I("Salt", "ml", 7.5, "salt"),
+        I("Unbleached white bread flour", "g", 300, "bread_flour"),
+        I("Wholemeal (whole-wheat) bread flour", "g", 75, "wholewheat_flour"),
+        I("Unsweetened fruit and nut muesli", "g", 150, "muesli"),
+        I("Skimmed milk powder", "ml", 45, "milk_powder"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", 7.5, "yeast"),
+        I("Stoned (pitted) dates, chopped", "g", 65, "dates", "lateknead"),
+    ], post=[
+        "Lightly oil a baking sheet.",
+        "When the dough cycle has finished, turn the dough out onto a surface dusted with wholemeal flour and knock "
+        "it back gently.",
+        "Shape into a plump round and place on the baking sheet. With a sharp knife make three cuts about 1 cm deep "
+        "across the top, dividing it into six sections.",
+        "Cover with lightly oiled cling film and leave 30–45 min, until almost doubled in size.",
+        "Meanwhile preheat the oven to 200 °C (fan ≈ 180 °C) / 400 °F / Gas 6.",
+        "Bake 30–35 min until golden and hollow-sounding when tapped underneath. Cool on a wire rack.",
+    ], notes="Adapted from a bread machine cookbook (Speciality grains, p. 84). One size only, ≈ 925 g of dough — "
+             "within the 1000 g limit, so no rescaling. Program 14 Dough has no add-in beep, so the app alerts you "
+             "about 5 min before kneading is due to end to add the dates (the book's 'last few minutes of kneading'); "
+             "that time is estimated from the LCD total. Salt goes in with the liquids (manual's order).",
+       variants={
+           "Oven bake (book)": {},
+           "Bake in the machine": {
+               "program": 8,
+               "sizes": ["1000 g"],
+               "blade": True,
+               "ingredients": [
+        I("Water", "ml", 260, "water", note="add 1 tbsp more if the dough is too firm (depends on the muesli)"),
+        I("Sunflower oil", "ml", 30, "oil"),
+        I("Clear honey", "ml", 15, "honey"),
+        I("Salt", "ml", 7.5, "salt"),
+        I("Unbleached white bread flour", "g", 300, "bread_flour"),
+        I("Wholemeal (whole-wheat) bread flour", "g", 75, "wholewheat_flour"),
+        I("Unsweetened fruit and nut muesli", "g", 150, "muesli"),
+        I("Skimmed milk powder", "ml", 45, "milk_powder"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", 7.5, "yeast"),
+        I("Stoned (pitted) dates, chopped", "g", 65, "dates", "beep"),
+    ],
+               "post": [],
+               "notes": "Machine-baked loaf: program 8 Fruit bread, WEIGHT 1000 g (≈ 925 g in the pan). Sticky "
+                        "fruit like dates goes straight into the pan at the add-in beep, not in the ingredients box "
+                        "(manual). Medium crust. The result is a tall loaf in the shape of the pan rather than the "
+                        "book's scored round. Add 1 tbsp more water if the dough looks too firm during the first "
+                        "knead.",
+           },
+       }),
     R("Pasta dough", "Dough", 14, SINGLE, [
         I("Water", "ml", 260, "water"),
         I("Flour", "g", 400, "plain_flour"),
@@ -991,6 +1045,11 @@ def build_steps(r, idx, size, crust, cup):
     if blade_enabled(r) and p in BREAD_PROGS:
         S.append("At the paddle alert (ferment icon, phase 2): **unplug** (max 10 min!), lift out the pan, take the dough out "
                  "with floured hands, pull off the paddle, put the dough back, lock the pan, close the lid, plug back in — the program resumes.")
+    late = by("lateknead")
+    if late:
+        S.append("In the last few minutes of kneading (app alerts ~5 min before kneading is due to end): open the lid "
+                 "and add " + "; ".join(ing_line(i, idx, cup) for i in late)
+                 + ". If kneading has already stopped, knead them in by hand when you shape the dough.")
     pre = by("prebake")
     if pre:
         S.append("Just before the bake phase starts (app alerts ~2 min ahead): open the lid briefly, then "
@@ -1037,6 +1096,17 @@ def build_events(r, phases, idx, cup, blade_on):
                 f"Add {i['name']}: {m}" + (f" (≈ {v})" if v and v != "—" else ""), "add")
     for e in r.get("events", []):
         add(float(e.get("min", 0)) * 60, "Reminder", e.get("msg", ""), "add")
+    lates = [i for i in r["ingredients"] if i.get("where") == "lateknead"]
+    if lates:
+        cum, end = 0, None
+        for ph in phases:
+            if ph["name"].lower().startswith("knead"):
+                end = cum + ph["sec"]
+            cum += ph["sec"]
+        if end is not None:
+            add(max(0, end - 300), "Add " + ", ".join(i["name"].split(",")[0].lower() for i in lates),
+                "Last minutes of kneading: open the lid and add "
+                + ", ".join(i["name"].lower() for i in lates) + ".", "add")
     pres = [i for i in r["ingredients"] if i.get("where") == "prebake"]
     if pres:
         cum = 0
