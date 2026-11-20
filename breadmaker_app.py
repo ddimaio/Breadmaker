@@ -178,6 +178,7 @@ WHERE = {
     "timed": "At a set minute (alert)",
     "prep": "Preparation (outside machine)",
     "lateknead": "By hand in the last minutes of kneading (alert)",
+    "stage2": "Second stage (added to the pan later)",
     "prebake": "Brushed/sprinkled on just before baking (alert)",
     "midbake": "Brushed on halfway through baking (alert)",
     "after": "After the program (topping/finishing)",
@@ -371,13 +372,17 @@ def I(name, unit, amt, d=None, where="pan", note="", at_min=None):
 
 
 def R(name, cat, program, sizes, ings, prep=None, post=None, notes="", blade=None,
-      time_default=None, events=None, variants=None):
+      time_default=None, events=None, variants=None, stage2=None, stages=None):
     d = {"name": name, "category": cat, "program": program, "sizes": sizes,
          "ingredients": ings, "prep": prep or [], "post": post or [], "notes": notes,
          "blade": blade, "time_default": time_default, "events": events or [],
          "builtin": True}
     if variants:
         d["variants"] = variants
+    if stage2:
+        d["stage2"] = stage2
+    if stages:
+        d["stages"] = stages
     return d
 
 
@@ -956,6 +961,72 @@ BUILTIN = [
                         "pull-apart mini loaves.",
            },
        }),
+    R("Pane all'olio", "Dough", 14, SINGLE, [
+        I("Water (biga)", "ml", 105, "water"),
+        I("White bread flour (biga)", "g", 175, "bread_flour"),
+        I("Easy bake (rapid-rise) dried yeast (biga)", "ml", 5, "yeast"),
+        I("Water (dough)", "ml", 90, "water", "stage2"),
+        I("Extra virgin olive oil (dough)", "ml", 60, "oil", "stage2"),
+        I("Salt (dough)", "ml", 10, "salt", "stage2"),
+        I("Granulated sugar (dough)", "ml", 5, "sugar", "stage2"),
+        I("Unbleached white bread flour (dough), plus extra for dusting", "g", 225, "bread_flour", "stage2"),
+    ], post=[
+        "Lightly flour a peel (baker's shovel) or baking sheet.",
+        "Turn the dough out onto a lightly floured surface, knock it back gently and shape into a plump round.",
+        "With your palms, roll it backwards and forwards, concentrating on the ends, into a tapered torpedo about "
+        "30 cm long. Place on the peel or baking sheet.",
+        "Cover with lightly oiled cling film and leave in a warm place 45–60 min, until almost doubled.",
+        "Meanwhile put a baking stone on a shelf about a third of the way up the oven and preheat to 230 °C "
+        "(fan ≈ 210 °C) / 450 °F / Gas 8. No stone? Use unglazed terracotta tiles edge to edge, leaving air "
+        "space around the outside.",
+        "Dust the top lightly with flour, slash along its length and transfer the loaf to the hot stone.",
+        "Mist the inside of the oven with water. Bake 15 min, misting again after 2 and after 4 min.",
+        "Reduce to 190 °C (fan ≈ 170 °C) / 375 °F / Gas 5 and bake 20–25 min more, until golden all over and "
+        "hollow-sounding when tapped on the base. Cool on a wire rack; serve warm or cold.",
+    ], notes="Adapted from a bread machine cookbook (Sourdoughs and starter dough breads, p. 123). One size only, "
+             "≈ 670 g in the pan — within the 1000 g limit, so no rescaling. Three stages: the biga is mixed on "
+             "program 14 Dough and left 8 h, then the dough ingredients are added on top and run on program 14 "
+             "again. Use the 'Timer for' selector for each stage. Salt and sugar go under the flour with the liquids "
+             "(manual's order).",
+       stage2={"program": 14, "timer_label": "Stage 3 — Dough", "between": [
+            "When the dough program ends, switch the machine off (unplug) but leave the biga inside with the lid "
+            "closed for **8 hours** — start the **Stage 2 — Biga rest** timer. If you need the machine meanwhile, "
+            "move the biga to a bowl, cover with a damp tea towel and leave at room temperature.",
+            "After 8 hours, lift out the pan and break the biga into three or four pieces (if you moved it to a "
+            "bowl, put it back in the pan).",
+        ]},
+       stages=[
+            {"label": "Stage 1 — Biga", "program": 14, "done_title": "Biga mixed — start the 8 h rest"},
+            {"label": "Stage 2 — Biga rest", "program": 14, "fixed_min": 480, "phase_name": "Biga resting",
+             "done_title": "Biga ready — add the dough ingredients",
+             "caption": "Start this when the biga's dough program ends and the machine is switched off."},
+            {"label": "Stage 3 — Dough", "program": 14, "done_title": "Dough ready — shape the loaf"},
+        ],
+       variants={
+           "Oven bake (book)": {},
+           "Bake in the machine": {
+               "sizes": ["750 g"],
+               "stage2": {"program": 2, "timer_label": "Stage 3 — Bake", "between": [
+            "When the dough program ends, switch the machine off (unplug) but leave the biga inside with the lid "
+            "closed for **8 hours** — start the **Stage 2 — Biga rest** timer. If you need the machine meanwhile, "
+            "move the biga to a bowl, cover with a damp tea towel and leave at room temperature.",
+            "After 8 hours, lift out the pan and break the biga into three or four pieces (if you moved it to a "
+            "bowl, put it back in the pan).",
+        ]},
+               "stages": [
+            {"label": "Stage 1 — Biga", "program": 14, "done_title": "Biga mixed — start the 8 h rest"},
+            {"label": "Stage 2 — Biga rest", "program": 14, "fixed_min": 480, "phase_name": "Biga resting",
+             "done_title": "Biga ready — add the dough ingredients",
+             "caption": "Start this when the biga's dough program ends and the machine is switched off."},
+            {"label": "Stage 3 — Bake", "program": 2},
+        ],
+               "post": [],
+               "notes": "Machine-baked loaf: biga as in the book, then the dough ingredients go on top and the "
+                        "loaf is made on program 2 French bread, WEIGHT 750 g (≈ 670 g in the pan), medium crust — "
+                        "olive oil is fine on the French program (the manual's own French bread uses oil). You get "
+                        "a pan-shaped loaf with a crisp crust instead of the book's slashed torpedo.",
+           },
+       }),
     R("Pasta dough", "Dough", 14, SINGLE, [
         I("Water", "ml", 260, "water"),
         I("Flour", "g", 400, "plain_flour"),
@@ -1184,6 +1255,25 @@ def build_steps(r, idx, size, crust, cup):
         S.append("Halfway through the bake (app alerts): open the lid briefly, brush the top of the loaf with "
                  + ing_line(i, idx, cup) + " using a pastry brush, and close the lid straight away.")
 
+    st2 = r.get("stage2")
+    if st2:
+        S += st2.get("between", [])
+        for i in by("stage2"):
+            S.append("Add to pan: " + ing_line(i, idx, cup))
+        p = st2["program"]
+        S.append("Lock the pan in, close the lid gently and plug in.")
+        setting = f"MENU → **{p} {PROGRAMS[p]}**"
+        if p in WEIGHT_PROGS and size in SIZES3:
+            setting += f" · WEIGHT → **{size}**"
+        if p in CRUST_PROGS:
+            setting += f" · BURNING COLOR → **{crust}**"
+        S.append(setting + ". Enter the LCD time in the **" + st2["timer_label"] + "** timer below, then tap "
+                 "START and start the timer at the same moment.")
+        if p in BREAD_PROGS and r.get("blade", True) is not False:
+            S.append("At the paddle alert (ferment icon, phase 2): **unplug** (max 10 min!), lift out the pan, take "
+                     "the dough out with floured hands, pull off the paddle, put the dough back, lock the pan, close "
+                     "the lid, plug back in — the program resumes.")
+
 
     if p in BREAD_PROGS:
         S += ["At the end: 10 beeps, LCD shows 0:00, keep-warm runs up to 60 min — take the bread out during keep-warm.",
@@ -1294,7 +1384,8 @@ def build_events(r, phases, idx, cup, blade_on):
     elif p == 10:
         add(total, "Jam is ready", "Oven gloves; hold the pan level, pour into heat-proof jars.", "done")
     else:
-        add(total, f"{PROGRAMS.get(p, 'Program')} finished", "Unplug and remove the contents.", "done")
+        add(total, r.get("done_title") or f"{PROGRAMS.get(p, 'Program')} finished",
+            "Unplug and remove the contents." if not r.get("done_title") else "Time for the next step.", "done")
     return sorted(ev, key=lambda e: e["at"])
 
 
@@ -1648,10 +1739,23 @@ def page_bake():
         k = stage_labels.index(st.radio("Timer for", stage_labels, horizontal=True, key=f"stage|{r['name']}"))
         stg = stages[k]
         r_t = {**r, "program": stg["program"], "time_default": stg.get("time_default", r.get("time_default")),
-               "name": f"{r['name']} — {stg['label']}", "ingredients": r["ingredients"] if k == 0 else []}
+               "name": f"{r['name']} — {stg['label']}", "ingredients": r["ingredients"] if k == 0 else [],
+               "done_title": stg.get("done_title"), "events": []}
         if stg.get("caption"):
             st.caption(stg["caption"])
-        timer_setup(r_t, size, idx, crust)
+        if stg.get("fixed_min"):
+            ph = [{"name": stg.get("phase_name", stg["label"]), "sec": int(stg["fixed_min"] * 60)}]
+            existing = load_run()
+            ok = True
+            if existing:
+                ok = st.checkbox(f"Replace the running timer ({existing['recipe']})", key=f"fxrep|{r_t['name']}")
+            if st.button(f"▶️ Start {stg['fixed_min'] / 60:g} h timer", type="primary", width="stretch",
+                         disabled=not ok, key=f"fxgo|{r_t['name']}"):
+                start_run(r_t, size, idx, crust, ph, False, CUP)
+                st.session_state.goto = True
+                st.rerun()
+        else:
+            timer_setup(r_t, size, idx, crust)
     else:
         timer_setup(r, size, idx, crust)
 
