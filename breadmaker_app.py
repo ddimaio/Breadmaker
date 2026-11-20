@@ -473,6 +473,32 @@ BUILTIN = [
         I("Bread flour", "g", [540, 400, 270], "bread_flour"),
         I("Yeast", "g", [6, 5, 3], "yeast"),
     ]),
+    R("Crispy French bread", "Bread", 2, SIZES3, [
+        I("Water", "ml", [350, 300, 205], "water"),
+        I("Salt", "ml", [7.5, 5, 3.75], "salt"),
+        I("Sunflower or other refined oil (instead of the book's butter)", "ml", [12.5, 12.5, 7.5], "oil"),
+        I("Unbleached white bread flour", "g", [500, 400, 275], "bread_flour"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", [6.25, 5, 3.75], "yeast"),
+    ], notes="Adapted from a bread machine cookbook (Basic breads, p. 78). The book's Medium (≈ 880 g) is used "
+             "for 1000 g and its Small (≈ 725 g) for 750 g; its Large (≈ 1.06 kg) is over the 1000 g limit, so the "
+             "500 g loaf is the Small scaled by 0.69. The manual says program 2 French bread is not suitable for "
+             "recipes with butter, margarine or milk, so the book's butter is swapped for a similar amount of fat "
+             "as oil (the manual's own French bread uses oil). To use butter as the book does, choose the Basic "
+             "program under Method — the crust will be a little softer. Medium crust. Salt and fat go in with the "
+             "water (manual's order).",
+       variants={
+           "French program, oil (manual)": {},
+           "Basic program, butter (book)": {
+               "program": 1,
+               "ingredients": [
+                   I("Water", "ml", [350, 300, 205], "water"),
+                   I("Salt", "ml", [7.5, 5, 3.75], "salt"),
+                   I("Butter", "g", [15, 15, 10], "butter", note="small pieces"),
+                   I("Unbleached white bread flour", "g", [500, 400, 275], "bread_flour"),
+                   I("Easy bake (rapid-rise) dried yeast", "ml", [6.25, 5, 3.75], "yeast"),
+               ],
+           },
+       }),
     R("Corn bread", "Bread", 2, SIZES3, [
         I("Water", "ml", [320, 240, 160], "water"),
         I("Salt", "g", [6, 5, 3], "salt"),
