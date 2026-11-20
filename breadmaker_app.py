@@ -126,6 +126,7 @@ DENSITY = {
     "plain_flour": ("Plain / all-purpose flour", 0.53),
     "self_raising_flour": ("Self-raising flour", 0.53),
     "wholewheat_flour": ("Wholewheat flour", 0.51),
+    "granary_flour": ("Granary / Malthouse flour", 0.48),
     "rye_flour": ("Rye flour", 0.43),
     "cornmeal": ("Corn flour (fine cornmeal)", 0.62),
     "starch": ("Starch (cornflour / cornstarch)", 0.54),
@@ -508,6 +509,19 @@ BUILTIN = [
              "book's Medium to ≈ 990 / 735 / 500 g. The 750 g version comes out almost identical to the book's "
              "Small (≈ 736 g). Program 3 Whole wheat and medium crust, as the book says. Salt goes in with the "
              "liquids (manual's order) instead of on top of the flour. A dense, heavy loaf is normal for rye."),
+    R("Granary bread", "Bread", 3, SIZES3, [
+        I("Water", "ml", [325, 240, 180], "water"),
+        I("Salt", "ml", [7.5, 5, 3.75], "salt"),
+        I("Granulated sugar", "ml", [15, 10, 7.5], "sugar"),
+        I("Butter", "g", [25, 20, 15], "butter", note="small pieces"),
+        I("Granary (or Malthouse) bread flour", "g", [500, 375, 280], "granary_flour"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", [7.5, 5, 3.75], "yeast"),
+    ], notes="Adapted from a bread machine cookbook (Basic breads, p. 73). The book's Medium (≈ 875 g) is used "
+             "for 1000 g and its Small (≈ 655 g) for 750 g; its Large (≈ 1.05 kg) is over the 1000 g limit, so the "
+             "500 g loaf is the Small scaled by 0.75. Program 3 Whole wheat, medium crust, as the book says. "
+             "Malthouse flour works instead of Granary. If the loaf collapses slightly before baking, next time add "
+             "2–3 tsp (10–15 ml) lemon juice with the water, or a crushed 100 mg vitamin C tablet. Salt, sugar "
+             "and butter go in with the water (manual's order)."),
     R("Light wholemeal bread", "Bread", 3, SIZES3, [
         I("Water", "ml", [350, 280, 195], "water"),
         I("Salt", "ml", [7.5, 7.5, 5], "salt"),
