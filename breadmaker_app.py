@@ -484,6 +484,26 @@ BUILTIN = [
              "book's Medium to ≈ 990 / 735 / 500 g. The 750 g version comes out almost identical to the book's "
              "Small (≈ 736 g). Program 3 Whole wheat and medium crust, as the book says. Salt goes in with the "
              "liquids (manual's order) instead of on top of the flour. A dense, heavy loaf is normal for rye."),
+    R("Light wholemeal bread", "Bread", 3, SIZES3, [
+        I("Water", "ml", [350, 280, 195], "water"),
+        I("Salt", "ml", [7.5, 7.5, 5], "salt"),
+        I("Butter", "g", [25, 20, 14], "butter", note="small pieces"),
+        I("Skimmed milk powder", "ml", [30, 15, 10], "milk_powder"),
+        I("Granulated sugar", "ml", [10, 7.5, 5], "sugar"),
+        I("White bread flour", "g", [150, 125, 90], "bread_flour"),
+        I("Wholemeal (whole-wheat) bread flour", "g", [350, 250, 175], "wholewheat_flour"),
+        I("Easy bake (rapid-rise) dried yeast", "ml", [7.5, 5, 3.75], "yeast"),
+    ], notes="Adapted from a bread machine cookbook (Basic breads). The book's Medium (≈ 905 g) is used "
+             "for 1000 g and its Small (≈ 700 g) for 750 g; its Large (≈ 1.06 kg) is over the 1000 g limit, so the "
+             "500 g loaf is the Small scaled by 0.7. About two-thirds of the flour is wholemeal, so the manual's "
+             "Whole wheat program (for 50 % wholemeal or more) is the default; the book uses Basic, which is "
+             "quicker and gives a slightly less risen loaf — pick it under Method. Medium or light crust. Salt, "
+             "butter, milk powder and sugar go in with the water (manual's order). Variation: brown bread flour "
+             "instead of wholemeal gives a lighter loaf.",
+       variants={
+           "Whole wheat program (manual)": {},
+           "Basic program (book)": {"program": 1},
+       }),
     R("Sweet bread", "Bread", 4, SIZES3, [
         I("Water", "ml", [280, 220, 140], "water"),
         I("Egg", "pcs", [2, 1, 1]),
