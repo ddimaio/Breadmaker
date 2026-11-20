@@ -178,6 +178,8 @@ WHERE = {
     "timed": "At a set minute (alert)",
     "prep": "Preparation (outside machine)",
     "lateknead": "By hand in the last minutes of kneading (alert)",
+    "refresh1": "1st refreshment (added later)",
+    "refresh2": "2nd refreshment (added later)",
     "stage2": "Second stage (added to the pan later)",
     "prebake": "Brushed/sprinkled on just before baking (alert)",
     "midbake": "Brushed on halfway through baking (alert)",
@@ -372,7 +374,8 @@ def I(name, unit, amt, d=None, where="pan", note="", at_min=None):
 
 
 def R(name, cat, program, sizes, ings, prep=None, post=None, notes="", blade=None,
-      time_default=None, events=None, variants=None, stage2=None, stages=None, stage1_steps=None):
+      time_default=None, events=None, variants=None, stage2=None, stages=None, stage1_steps=None,
+      batches=None):
     d = {"name": name, "category": cat, "program": program, "sizes": sizes,
          "ingredients": ings, "prep": prep or [], "post": post or [], "notes": notes,
          "blade": blade, "time_default": time_default, "events": events or [],
@@ -385,6 +388,8 @@ def R(name, cat, program, sizes, ings, prep=None, post=None, notes="", blade=Non
         d["stages"] = stages
     if stage1_steps:
         d["stage1_steps"] = stage1_steps
+    if batches:
+        d["batches"] = batches
     return d
 
 
@@ -1168,6 +1173,91 @@ BUILTIN = [
                         "ciabatte.",
            },
        }),
+    R("Pain de seigle", "Dough", 14, SINGLE, [
+        I("Water (chef)", "ml", 200, "water"),
+        I("Rye flour (chef)", "g", 175, "rye_flour"),
+        I("Easy bake (rapid-rise) dried yeast (chef)", "tsp", 0.25, "yeast"),
+        I("Water (1st refreshment)", "ml", 70, "water", "refresh1"),
+        I("Plain (all-purpose) flour (1st refreshment)", "g", 50, "plain_flour", "refresh1"),
+        I("Water (2nd refreshment)", "ml", 15, "water", "refresh2"),
+        I("Plain (all-purpose) flour (2nd refreshment)", "g", 50, "plain_flour", "refresh2"),
+        I("Water (bread dough)", "ml", 15, "water", "stage2"),
+        I("Salt (bread dough)", "ml", 10, "salt", "stage2"),
+        I("Clear honey (bread dough)", "ml", 5, "honey", "stage2"),
+        I("Unbleached white bread flour (bread dough), plus extra for dusting", "g", 225, "bread_flour", "stage2"),
+        I("Easy bake dried yeast (bread dough)", "ml", 2.5, "yeast", "stage2"),
+    ], stage1_steps=[
+        "Tap START and start the **Stage 1 — Chef mix** timer (10 min).",
+        "When it goes off, hold START/STOP for about 3 seconds until it beeps to switch the machine off.",
+    ], batches=[
+        {"where": "refresh1", "before": [
+            "Leave the chef to ferment in the machine, lid closed, for about **24 hours** — start the **Stage 2 — Chef "
+            "ferment** timer. If you need the machine meanwhile, move the chef to a bowl, cover with a damp tea towel "
+            "and leave at room temperature.",
+            "Lift out the pan (return the chef to it if you moved it) and add the 1st refreshment:"],
+         "after": [
+            "Lock the pan in, select **14 Dough**, tap START and start the **Stage 3 — 1st refreshment mix** timer "
+            "(10 min). When it goes off, hold START/STOP for about 3 seconds until it beeps to switch the machine off.",
+            "Leave the dough in the machine, lid closed, for a further **24 hours** — start the **Stage 4 — 1st "
+            "refreshment rest** timer.",
+            "Then add the 2nd refreshment:"]},
+        {"where": "refresh2", "after": [
+            "Mix as before: **14 Dough**, START, start the **Stage 5 — 2nd refreshment mix** timer (10 min), then "
+            "hold START/STOP for about 3 seconds until it beeps to switch the machine off.",
+            "Leave the dough in the machine for **8 hours** — start the **Stage 6 — 2nd refreshment rest** timer."]},
+    ], post=[
+        "Lightly flour a baking sheet.",
+        "Turn the dough out onto a lightly floured surface, knock it back gently and divide into two equal pieces. "
+        "Roll each into a rope about 45 cm long.",
+        "Place the ropes side by side. Starting at the centre, lay one over the other and keep twisting to the end. "
+        "Turn the dough round and twist the other ends — keep twisting in the same direction. Dampen the ends with "
+        "water and tuck them under to seal.",
+        "Place the twist on the baking sheet, cover with oiled cling film and leave in a warm place about 45 min, until "
+        "almost doubled — start the **Stage 8 — Final rise** timer. Preheat the oven to 220 °C (fan ≈ 200 °C) / "
+        "425 °F / Gas 7 towards the end.",
+        "Dust the top lightly with flour and bake 40 min, until golden and hollow-sounding when tapped on the base.",
+        "Switch off the oven but leave the loaf inside with the door slightly ajar for 5 min, then cool on a wire rack.",
+    ], notes="Adapted from a bread machine cookbook (Sourdoughs and starter dough breads, p. 126). One loaf from "
+             "≈ 820 g of dough — within the 1000 g limit, so no rescaling. A rye starter ('chef') built over about "
+             "2½ days: chef mixed 10 min and fermented 24 h, refreshed and rested 24 h, refreshed again and rested "
+             "8 h, then the bread dough on program 14 Dough. Each mix uses program 14 Dough stopped after 10 min. Use "
+             "the 'Timer for' selector for each stage. Salt and honey go with the water under the flour, yeast in a "
+             "hollow (manual's order). Serve thickly buttered — the book suggests it with shellfish.",
+       stage2={"program": 14, "timer_label": "Stage 7 — Bread dough", "between": [
+            "Finally add the bread dough ingredients:"]},
+       stages=[
+            {"label": "Stage 1 — Chef mix", "program": 14, "fixed_min": 10, "phase_name": "Mixing", "done_title": "Stop the machine now", "done_msg": "Hold START/STOP ~3 s to switch off, then start the next rest."},
+            {"label": "Stage 2 — Chef ferment", "program": 14, "fixed_min": 1440, "phase_name": "Chef ferment", "done_title": "Chef ready — add the 1st refreshment"},
+            {"label": "Stage 3 — 1st refreshment mix", "program": 14, "fixed_min": 10, "phase_name": "Mixing", "done_title": "Stop the machine now", "done_msg": "Hold START/STOP ~3 s to switch off, then start the next rest."},
+            {"label": "Stage 4 — 1st refreshment rest", "program": 14, "fixed_min": 1440, "phase_name": "1st refreshment rest", "done_title": "Add the 2nd refreshment"},
+            {"label": "Stage 5 — 2nd refreshment mix", "program": 14, "fixed_min": 10, "phase_name": "Mixing", "done_title": "Stop the machine now", "done_msg": "Hold START/STOP ~3 s to switch off, then start the next rest."},
+            {"label": "Stage 6 — 2nd refreshment rest", "program": 14, "fixed_min": 480, "phase_name": "2nd refreshment rest", "done_title": "Add the bread dough ingredients"},
+            {"label": "Stage 7 — Bread dough", "program": 14, "done_title": "Dough ready — shape the twist"},
+            {"label": "Stage 8 — Final rise", "program": 14, "fixed_min": 45, "phase_name": "Final rise", "done_title": "Risen — dust with flour and bake"},
+        ],
+       variants={
+           "Oven bake (book)": {},
+           "Bake in the machine": {
+               "sizes": ["1000 g"],
+               "stage2": {"program": 2, "timer_label": "Stage 7 — Bake", "between": [
+                    "Finally add the bread dough ingredients:"]},
+               "stages": [
+            {"label": "Stage 1 — Chef mix", "program": 14, "fixed_min": 10, "phase_name": "Mixing", "done_title": "Stop the machine now", "done_msg": "Hold START/STOP ~3 s to switch off, then start the next rest."},
+            {"label": "Stage 2 — Chef ferment", "program": 14, "fixed_min": 1440, "phase_name": "Chef ferment", "done_title": "Chef ready — add the 1st refreshment"},
+            {"label": "Stage 3 — 1st refreshment mix", "program": 14, "fixed_min": 10, "phase_name": "Mixing", "done_title": "Stop the machine now", "done_msg": "Hold START/STOP ~3 s to switch off, then start the next rest."},
+            {"label": "Stage 4 — 1st refreshment rest", "program": 14, "fixed_min": 1440, "phase_name": "1st refreshment rest", "done_title": "Add the 2nd refreshment"},
+            {"label": "Stage 5 — 2nd refreshment mix", "program": 14, "fixed_min": 10, "phase_name": "Mixing", "done_title": "Stop the machine now", "done_msg": "Hold START/STOP ~3 s to switch off, then start the next rest."},
+            {"label": "Stage 6 — 2nd refreshment rest", "program": 14, "fixed_min": 480, "phase_name": "2nd refreshment rest", "done_title": "Add the bread dough ingredients"},
+            {"label": "Stage 7 — Bake", "program": 2},
+        ],
+               "post": [],
+               "notes": "Machine-baked loaf: the chef and both refreshments as in the book, then the bread dough "
+                        "ingredients go on top and the loaf is made on program 2 French bread, WEIGHT 1000 g "
+                        "(≈ 820 g in the pan), medium crust — no butter or milk, so the French program suits it. "
+                        "About a third of the flour is rye, below the manual's 50 % threshold for the Whole wheat "
+                        "program. You get a pan-shaped loaf instead of the book's twist.",
+           },
+       }),
     R("Pasta dough", "Dough", 14, SINGLE, [
         I("Water", "ml", 260, "water"),
         I("Flour", "g", 400, "plain_flour"),
@@ -1399,6 +1489,11 @@ def build_steps(r, idx, size, crust, cup):
         S.append("Halfway through the bake (app alerts): open the lid briefly, brush the top of the loaf with "
                  + ing_line(i, idx, cup) + " using a pastry brush, and close the lid straight away.")
 
+    for b in r.get("batches", []):
+        S += b.get("before", [])
+        for i in by(b["where"]):
+            S.append("Add to pan: " + ing_line(i, idx, cup))
+        S += b.get("after", [])
     st2 = r.get("stage2")
     if st2:
         S += st2.get("between", [])
