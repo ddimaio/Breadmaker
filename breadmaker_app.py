@@ -147,6 +147,11 @@ DENSITY = {
     "spice": ("Ground spice mix", 0.47),
     "choc_spread": ("Hazelnut nougat cream", 1.25),
     "chocolate": ("Chocolate, chopped", 0.72),
+    "molasses": ("Molasses / black treacle", 1.40),
+    "oat_bran": ("Oat bran", 0.40),
+    "breadcrumbs": ("Dried breadcrumbs", 0.42),
+    "coffee_granules": ("Instant coffee granules", 0.22),
+    "caraway": ("Caraway seeds", 0.45),
 }
 DENS_LABELS = ["— none —"] + [v[0] for v in DENSITY.values()]
 DENS_BY_LABEL = {v[0]: k for k, v in DENSITY.items()}
@@ -440,6 +445,25 @@ BUILTIN = [
         I("Whole wheat flour", "g", [360, 250, 180], "wholewheat_flour"),
         I("Yeast", "g", [8, 5, 4], "yeast"),
     ]),
+    R("Russian black bread", "Bread", 3, SIZES3, [
+        I("Water", "ml", [330, 245, 165], "water"),
+        I("Sunflower oil", "tbsp", [2, 1.5, 1], "oil"),
+        I("Molasses (black treacle)", "ml", [35, 25, 20], "molasses"),
+        I("Salt", "tsp", [1.25, 1, 0.75], "salt"),
+        I("Rye flour", "g", [140, 105, 70], "rye_flour"),
+        I("Wholemeal bread flour", "g", [80, 60, 40], "wholewheat_flour"),
+        I("Unbleached white bread flour", "g", [230, 170, 115], "bread_flour"),
+        I("Oat bran", "g", [35, 25, 20], "oat_bran"),
+        I("Dried breadcrumbs", "g", [70, 50, 35], "breadcrumbs"),
+        I("Cocoa powder (unsweetened)", "tbsp", [1.5, 1, 0.5], "cocoa"),
+        I("Instant coffee granules", "tbsp", [2, 1.5, 1], "coffee_granules"),
+        I("Caraway seeds", "tsp", [1.25, 1, 0.75], "caraway"),
+        I("Easy bake (rapid-rise) dried yeast", "tsp", [1.25, 1, 0.75], "yeast"),
+    ], notes="Adapted from a bread machine cookbook (Speciality grains, p. 96). The book's Medium (≈ 1.09 kg) "
+             "and Large (≈ 1.25 kg) are over this machine's 1000 g limit, so all three sizes are scaled from the "
+             "book's Medium to ≈ 990 / 735 / 500 g. The 750 g version comes out almost identical to the book's "
+             "Small (≈ 736 g). Program 3 Whole wheat and medium crust, as the book says. Salt goes in with the "
+             "liquids (manual's order) instead of on top of the flour. A dense, heavy loaf is normal for rye."),
     R("Sweet bread", "Bread", 4, SIZES3, [
         I("Water", "ml", [280, 220, 140], "water"),
         I("Egg", "pcs", [2, 1, 1]),
@@ -1221,8 +1245,10 @@ def page_bake():
     idx = sizes.index(size)
     crust = "medium"
     if p in CRUST_PROGS:
-        crust = c2.radio("Crust colour", ["light", "medium", "dark"], index=1, horizontal=True,
-                         key=f"crust|{r['name']}")
+        ck = f"crust|{r['name']}"
+        if ck not in st.session_state:
+            st.session_state[ck] = "medium"
+        crust = c2.radio("Crust colour", ["light", "medium", "dark"], horizontal=True, key=ck)
     if r.get("notes"):
         st.info(r["notes"])
 
